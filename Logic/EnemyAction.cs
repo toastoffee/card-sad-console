@@ -1,0 +1,68 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+public partial class RogueBattleState {
+	// 执行所有敌人的行动
+	public void ExecuteAllEnemyActions() {
+		foreach (var enemy in enemys) {
+			enemy.enemyAction.ExecuteAction();
+		}
+	}
+
+	public abstract class EnemyAction {
+		public CharObject parent;
+		public EnemyAction(CharObject parent) {
+			this.parent = parent;
+		}
+
+		public virtual string ForeshowAction() {
+			return string.Empty;
+		}
+		public string ForeshowAtkAction(int dmg) {
+			return $"will cause [{dmg}] damage to you";
+		}
+
+
+		public virtual void ExecuteAction() {
+
+		}
+
+		public void ExecuteAttackAction(int dmg) {
+
+			instance.DoAttack(new AttackParam {
+				attacker = parent,
+				deffender = instance.playerCharObj,
+				dmg = dmg
+			});
+        }
+	}
+	public class TreemanAction : EnemyAction {
+		public int idx;
+
+		public TreemanAction(CharObject parent) : base(parent) {
+		}
+
+		public override string ForeshowAction() {
+			switch (idx) {
+				case 0:
+					return ForeshowAtkAction(6);
+				default:
+					break;
+			}
+			return null;
+		}
+
+		public override void ExecuteAction() {
+			switch (idx) {
+				case 0:
+					ExecuteAttackAction(6);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+}

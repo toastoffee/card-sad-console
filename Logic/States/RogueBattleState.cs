@@ -1,0 +1,244 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+public partial class RogueBattleState : GameState {
+	public static RogueBattleState instance;
+
+	public CharObject playerCharObj = new() {
+		name = "玩家",
+		hp = 70,
+		maxHp = 70,
+	};
+
+	public List<CharObject> enemys = new();
+
+	public int roundIdx = 0;
+	public int mana = 0;
+	public GameStateEnum state;
+	public Action<CardSelectInput> selectCardHandler;
+	public object selectCardCtx;
+
+	public List<CardObjcet> yard = new();
+	public List<CardObjcet> deck = new();
+	public List<CardObjcet> tokens = new();
+
+	public struct CardSelectInput {
+		public bool isBreak;
+		public CardObjcet card;
+	}
+
+	public override void OnEnter() {
+		SetupEnemys();
+
+		AddOriginalToDeck("打击", 4);
+		AddOriginalToDeck("防御", 5);
+		AddOriginalToDeck("SWAP", 1);
+		AddOriginalToDeck("重击", 1);
+
+		deck.Shuffle();
+		OnRoundStart();
+	}
+
+	private void SetupEnemys() {
+		var enemy = new CharObject {
+			name = "树人",
+			hp = 27,
+			maxHp = 27,
+		};
+		enemy.enemyAction = new TreemanAction(enemy);
+		enemys.Add(enemy);
+	}
+
+	public override void OnTick() {
+		if (state == GameStateEnum.IDLE) {
+			OnIdleTick();
+		} else if (state == GameStateEnum.CARD_SELECTING) {
+			OnCardSelectingTick();
+		}
+	}
+
+	private void OnIdleTick() {
+		int idx = -1;
+		try {
+			idx = Convert.ToInt32(CardGame.instance.lastInputChar?.ToString()) - 1;
+		} catch { }
+		if (idx >= 0 && idx < tokens.Count) {
+			PreUseCard(idx);
+		}
+		if (CardGame.instance.lastInputChar == 'e') {
+			EndAndPushRound();
+		}
+	}
+
+	private void OnCardSelectingTick() {
+		int idx = -1;
+		try {
+			idx = Convert.ToInt32(CardGame.instance.lastInputChar?.ToString()) - 1;
+		} catch { }
+		if (idx >= 0 && idx < tokens.Count) {
+			var card = tokens[idx];
+			var input = new CardSelectInput {
+				isBreak = false,
+				card = card,
+			};
+			selectCardHandler?.Invoke(input);
+		}
+		if (CardGame.instance.lastInputChar == 'e') {
+			var input = new CardSelectInput {
+				isBreak = true,
+				card = null,
+			};
+			selectCardHandler?.Invoke(input);
+			GotoIdle();
+		}
+	}
+
+	public void GotoIdle() {
+		if (state == GameStateEnum.IDLE) {
+			return;
+		}
+		state = GameStateEnum.IDLE;
+		selectCardHandler = null;
+		CardGame.instance.lastInputChar = null;
+	}
+
+	public void GotoCardSelect() {
+		if (state == GameStateEnum.CARD_SELECTING) {
+			return;
+		}
+		state = GameStateEnum.CARD_SELECTING;
+		CardGame.instance.lastInputChar = null;
+	}
+
+	public override void Render() {
+		RenderRound();
+		playerCharObj.Render();
+		//Console.WriteLine();
+		RenderEnemys();
+		//Console.WriteLine();
+		RenderDeckAndYard();
+		//Console.WriteLine();
+		RenderTokensAndMana();
+	}
+
+	private void AddOriginalToDeck(string id, int cnt) {
+		for (int i = 0; i < cnt; i++) {
+			var card = new CardObjcet();
+			card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
+			deck.Add(card);
+		}
+	}
+
+	private void DrawFromDeck(int cnt) {
+		for (int i = 0; i < cnt; i++) {
+			if (deck.Count <= 0) {
+				RefillDeckFromYard();
+				i--;
+				continue;
+			} else {
+				var card = deck[0];
+				deck.RemoveAt(0);
+				tokens.Add(card);
+			}
+		}
+	}
+
+	private void PickFromDeck(CardObjcet card) {
+		if (!deck.Contains(card)) {
+			Log.Push($"[ERROR] 卡组中不包含 {card.name}");
+			return;
+		}
+		Log.Push($"从卡组中抽取了 [{card.name}]");
+		deck.Remove(card);
+		tokens.Add(card);
+	}
+
+	private void RefillDeckFromYard() {
+		Log.Push("重新洗牌");
+		deck = new List<CardObjcet>(yard);
+		yard.Clear();
+		deck.Shuffle();
+	}
+
+	private void DiscardCard(CardObjcet card) {
+		tokens.Remove(card);
+		yard.Add(card);
+	}
+	private void DisacrdAllTokens() {
+		var cnt = tokens.Count;
+		if (cnt == 0) {
+			return;
+		}
+		Log.Push($"弃掉{cnt}张剩余手牌");
+		while (tokens.Count > 0) {
+			DiscardCard(tokens[0]);
+		}
+	}
+
+	private void EndAndPushRound() {
+		Log.Push($"第【{roundIdx}】回合结束");
+		DisacrdAllTokens();
+
+		ExecuteAllEnemyActions();
+
+		roundIdx++;
+		Log.Push($"第【{roundIdx}】回合开始");
+		CardGame.instance.lastInputChar = null;
+
+		OnRoundStart();
+	}
+
+	private void OnRoundStart() {
+		playerCharObj.shield = 0;
+		mana = 3;
+		DrawFromDeck(4);
+	}
+
+
+	private void RenderEnemys() {
+		//Console.WriteLine("敌人：");
+		//Console.WriteLine();
+		//for (int i = 0; i < enemys.Count; i++) {
+		//	CharObject? enemy = enemys[i];
+		//	enemy.Render(i + 1);
+		//}
+	}
+
+	private void RenderRound() {
+		//Console.WriteLine($"第【{roundIdx}】回合");
+		//Console.WriteLine();
+	}
+
+	private void RenderDeckAndYard() {
+		//Console.WriteLine($"牌库剩余： {deck.Count} 弃牌堆：  {yard.Count}");
+	}
+
+	private void RenderTokensAndMana() {
+		//Console.WriteLine($"手牌：            能量：【{mana}】");
+		//Console.WriteLine();
+		//for (int i = 0; i < tokens.Count; i++) {
+		//	tokens[i].Render(i + 1);
+		//	Console.WriteLine();
+		//}
+		//Console.WriteLine();
+		//Console.WriteLine($"- {EnumTrans.Get(state)} -");
+	}
+}
+
+public static class Extension {
+	public static void Shuffle<T>(this IList<T> list) {
+		int n = list.Count;
+		var rng = new System.Random();
+
+		while (n > 1) {
+			n--;
+			int k = rng.Next(n + 1);
+			T value = list[k];
+			list[k] = list[n];
+			list[n] = value;
+		}
+	}
+}

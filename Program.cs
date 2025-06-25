@@ -1,14 +1,15 @@
 ﻿using SadConsole.Configuration;
 
+using CardConsole.Visual;
+
 Settings.WindowTitle = "My SadConsole Game";
 
-Builder gameStartup = new Builder()
-    .SetScreenSize(GameSettings.GAME_WIDTH, GameSettings.GAME_HEIGHT)
-    .SetStartingScreen<card_sad_console.Scenes.RootScreen>()
+Builder configuration = new Builder()
+    .SetScreenSize(120, 38)
+    .SetStartingScreen<RootScreen>()
     .IsStartingScreenFocused(true)
-    .ConfigureFonts(true)
     ;
 
-Game.Create(gameStartup);
+Game.Create(configuration);
 Game.Instance.Run();
 Game.Instance.Dispose();

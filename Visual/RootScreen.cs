@@ -2,66 +2,65 @@
 
 namespace CardConsole.Visual;
 
-internal class RootScreen : ScreenObject
-{
+internal class RootScreen : ScreenObject {
 
-    private ScreenSurface _mainSurface;
+	private ScreenSurface _mainSurface;
 
-    public PanelText turnText;
+	public PanelText turnText;
 
-    public PanelText playerHealthText;
-    public PanelText playerEnergyText;
+	public PanelText playerHealthText;
+	public PanelText playerEnergyText;
 
-    public PanelText enemyNameText;
-    public PanelText enemyHealthText;
-    public PanelText enemyIntentionText;
+	public PanelText enemyNameText;
+	public PanelText enemyHealthText;
+	public PanelText enemyIntentionText;
 
-    public int testNumber = 1;  // in case you dont know how it works
+	public int testNumber = 1;  // in case you dont know how it works
 
-    public RootScreen()
-    {
-        
-        _mainSurface = new ScreenSurface(Game.Instance.ScreenCellsX, Game.Instance.ScreenCellsY);
-        Children.Add(_mainSurface);
+	public ViewModel viewModel = new ViewModel();
+	public View view = new View();
 
-        _mainSurface.UseMouse = false;
+	public RootScreen() {
+		_mainSurface = new ScreenSurface(Game.Instance.ScreenCellsX, Game.Instance.ScreenCellsY);
+		Children.Add(_mainSurface);
 
-        turnText = new PanelText(new Point(3, 1), "Turn", 6, 3, Color.Wheat, _mainSurface);
-        turnText.alignType = PanelText.AlignType.Center;
-        turnText.content = "1";
+		_mainSurface.UseMouse = false;
 
-        playerEnergyText = new PanelText(new Point(3, 7), "Energy", 10, 3, Color.Orange, _mainSurface);
-        playerEnergyText.alignType = PanelText.AlignType.Center;
-        playerEnergyText.content = "3/3";
+		// 设置 ViewModel 测试数据
+		viewModel.turn = testNumber;
+		viewModel.eng = 3;
+		viewModel.maxEng = 3;
+		viewModel.playerHp = 70;
+		viewModel.maxPlayerHp = 70;
 
-        playerHealthText = new PanelText(new Point(3, 10), "HP", 10, 3, Color.Red, _mainSurface);
-        playerHealthText.alignType = PanelText.AlignType.Center;
-        playerHealthText.content = "70/70";
+		// 添加两个敌人用于测试
+		viewModel.enemies.Add(new EnemyViewModel {
+			name = "Tree",
+			hp = 27,
+			maxHp = 27,
+			intention = "will cause [6] damage to you"
+		});
 
-        enemyNameText = new PanelText(new Point(50, 7), "Enemy", 12, 3, Color.Purple, _mainSurface);
-        enemyNameText.alignType = PanelText.AlignType.Center;
-        enemyNameText.content = "Treeman";
+		viewModel.enemies.Add(new EnemyViewModel {
+			name = "Stone",
+			hp = 40,
+			maxHp = 40,
+			intention = "preparing to defend"
+		});
+	}
 
-        enemyHealthText = new PanelText(new Point(50, 10), "HP", 12, 3, Color.Red, _mainSurface);
-        enemyHealthText.alignType = PanelText.AlignType.Center;
-        enemyHealthText.content = "27/27";
+	public override bool ProcessKeyboard(Keyboard keyboard) {
+		//!!! IN CASE YOU DONT KNOW HOW IT WORKS !!!
+		bool handled = false;
 
-        enemyIntentionText = new PanelText(new Point(50, 13), "Intention", 30, 3, Color.Yellow, _mainSurface);
-        enemyIntentionText.alignType = PanelText.AlignType.Center;
-        enemyIntentionText.content = "enemy will cause 6 damage";
-    }
+		if (keyboard.IsKeyPressed(Keys.Up)) {
+			turnText.content = $"{testNumber++}";
+			handled = true;
+		}
 
-    public override bool ProcessKeyboard(Keyboard keyboard)
-    {
-        //!!! IN CASE YOU DONT KNOW HOW IT WORKS !!!
-        bool handled = false;
-
-        if (keyboard.IsKeyPressed(Keys.Up))
-        {
-            turnText.content = $"{testNumber++}";
-            handled = true;
-        }
-
-        return handled;
-    }
+		return handled;
+	}
+	public override void Update(TimeSpan delta) {
+		view.Render(viewModel, _mainSurface);
+	}
 }

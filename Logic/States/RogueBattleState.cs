@@ -188,13 +188,13 @@ public partial class RogueBattleState : GameState {
 			Log.Push($"[ERROR] 卡组中不包含 {card.name}");
 			return;
 		}
-		Log.Push($"从卡组中抽取了 [{card.name}]");
+		Log.Push($"draw from deck [{card.name}]");
 		deck.Remove(card);
 		tokens.Add(card);
 	}
 
 	private void RefillDeckFromYard() {
-		Log.Push("重新洗牌");
+		Log.Push("refill deck from yard.");
 		deck = new List<CardObjcet>(yard);
 		yard.Clear();
 		deck.Shuffle();
@@ -209,20 +209,20 @@ public partial class RogueBattleState : GameState {
 		if (cnt == 0) {
 			return;
 		}
-		Log.Push($"弃掉{cnt}张剩余手牌");
+		Log.Push($"discard {cnt} remain hands.");
 		while (tokens.Count > 0) {
 			DiscardCard(tokens[0]);
 		}
 	}
 
 	private void EndAndPushRound() {
-		Log.Push($"第【{roundIdx}】回合结束");
+		Log.Push($"Turn[{roundIdx}]end.");
 		DisacrdAllTokens();
 
 		ExecuteAllEnemyActions();
 
 		roundIdx++;
-		Log.Push($"第【{roundIdx}】回合开始");
+		Log.Push($"Turn[{roundIdx}]start.");
 		CardGame.instance.lastInputChar = null;
 
 		OnRoundStart();

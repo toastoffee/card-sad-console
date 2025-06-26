@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SadConsole;
 using SadConsole.UI;
+using SadConsole.UI.Controls;
 
 namespace CardConsole.Visual;
 internal class View {
@@ -17,17 +18,19 @@ internal class View {
 	public PanelText enemyNameText;
 	public PanelText enemyHealthText;
 	public PanelText enemyIntentionText;
+	public ControlHost controls = new();
 	private List<EnemyView> enemyViews = new List<EnemyView>();
 	private List<CardView> cardViews = new List<CardView>();
 
-    // 添加初始化表面的构造函数
-    public View() {
+	// 添加初始化表面的构造函数
+	public View() {
 		int width = Game.Instance.ScreenCellsX;
 		int height = Game.Instance.ScreenCellsY;
 
 		// 创建主表面
 		_mainSurface = new ScreenSurface((int)(width * 0.75), height);
-		_mainSurface.UseMouse = false;
+		_mainSurface.UseMouse = true; // 改为true以使按钮可以响应鼠标事件
+		_mainSurface.SadComponents.Add(controls);
 
 		// 创建日志表面（右侧部分）
 		int gameWidth = (int)(width * 0.75);  // 游戏区域占75%宽度 
@@ -60,8 +63,7 @@ internal class View {
 	}
 
 	// 将原来的Render方法重命名为RenderMainContent
-	private void RenderMainContent(ViewModel viewModel)
-	{
+	private void RenderMainContent(ViewModel viewModel) {
 		turnText = new PanelText(new Point(3, 1), "Turn", 6, 3, Color.Wheat, _mainSurface);
 		turnText.alignType = PanelText.AlignType.Center;
 		turnText.content = viewModel.turn.ToString();
@@ -75,14 +77,12 @@ internal class View {
 		playerHealthText.content = $"{viewModel.playerHp}/{viewModel.maxPlayerHp}";
 
 		// 确保敌人视图数量与敌人模型数量一致
-		while (enemyViews.Count < viewModel.enemies.Count)
-		{
+		while (enemyViews.Count < viewModel.enemies.Count) {
 			int index = enemyViews.Count;
 			int yPosition = 7; // 初始Y位置
 
 			// 计算当前敌人的Y位置，考虑前面所有敌人的高度
-			for (int j = 0; j < index; j++)
-			{
+			for (int j = 0; j < index; j++) {
 				yPosition += enemyViews[j].TotalHeight;
 			}
 
@@ -91,35 +91,31 @@ internal class View {
 		}
 
 		// 渲染每个敌人
-		for (int i = 0; i < viewModel.enemies.Count; i++)
-		{
+		for (int i = 0; i < viewModel.enemies.Count; i++) {
 			enemyViews[i].Render(viewModel.enemies[i]);
 		}
 
 		// 确保卡牌视图数量与手牌模型数量一致
-		while (cardViews.Count < viewModel.handCards.Count)
-		{
+		while (cardViews.Count < viewModel.handCards.Count) {
 			int index = cardViews.Count;
 			int xPosition = 10; // 初始X位置
 
-			for (int i = 0; i < index; i++)
-			{
+			for (int i = 0; i < index; i++) {
 				xPosition += cardViews[i].TotalWidth + 2;
 			}
 
-			cardViews.Add(new CardView(xPosition, 20, _mainSurface));
+			cardViews.Add(new CardView(xPosition, 20, _mainSurface, controls));
 		}
 
-        // 渲染每张卡牌
-        for (int i = 0; i < viewModel.handCards.Count; i++)
-		{
+		// 渲染每张卡牌
+		for (int i = 0; i < viewModel.handCards.Count; i++) {
 			cardViews[i].Render(viewModel.handCards[i]);
-        }
+		}
 
-    }
+	}
 
-    // 将日志渲染方法移到这里
-    private void RenderLogArea(ViewModel viewModel) {
+	// 将日志渲染方法移到这里
+	private void RenderLogArea(ViewModel viewModel) {
 		// 确定日志区域的高度划分
 		int totalHeight = _logSurface.Height;
 		int headerHeight = 1;
@@ -133,7 +129,7 @@ internal class View {
 
 		// 游戏日志区域
 		_logSurface.Print(2, 1, "Game Log", Color.Yellow);
-		
+
 		for (int i = 1; i < _logSurface.Width - 1; i++) {
 			_logSurface.Surface[i, 2].Glyph = '-';
 			_logSurface.Surface[i, 2].Foreground = Color.White;
@@ -153,7 +149,7 @@ internal class View {
 		// 系统日志区域
 		int systemLogY = gameLogHeight + 4;
 		_logSurface.Print(2, systemLogY, "Sys Log", Color.Yellow);
-		
+
 		for (int i = 1; i < _logSurface.Width - 1; i++) {
 			_logSurface.Surface[i, systemLogY + 1].Glyph = '-';
 			_logSurface.Surface[i, systemLogY + 1].Foreground = Color.White;
@@ -207,44 +203,71 @@ internal class EnemyView {
 	}
 }
 
-internal class CardView
-{
-    public (int x, int y) anchor;
+internal class CardView {
+	public (int x, int y) anchor;
 	public PanelText cardNameText;
 	public PanelText costText;
 	public PanelText descriptionText;
 	private ScreenSurface mainSurface;
+	private SadConsole.UI.Controls.ButtonBox playButton; // 添加按钮字段
 
 	public int TotalWidth => 17;
 
-	public CardView(int x, int y, ScreenSurface surface)
-	{
+	public CardView(int x, int y, ScreenSurface surface, ControlHost controls) {
 		anchor = (x, y);
 		mainSurface = surface;
-    }
 
-	public void Render(CardViewModel viewModel)
-	{
-        if (cardNameText == null)
-        {
-            cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
-            cardNameText.alignType = PanelText.AlignType.Center;
-        }
-        cardNameText.content = viewModel.name;
+		// 初始化按钮 - 按钮宽度为17，高度为5，位置在卡牌描述框的下方
+		playButton = new ButtonBox(17, 5) {
+			Position = new Point(anchor.x, anchor.y + 11), // 按钮位置
+			Text = "Play" // 按钮文本
+		};
 
-        if (costText == null)
-        {
-            costText = new PanelText(new Point(anchor.x + 12, anchor.y), "mana", 5, 3, Color.AnsiCyan, mainSurface);
-            costText.alignType = PanelText.AlignType.Center;
-        }
-        costText.content = viewModel.cost.ToString();
+		// 绑定按钮点击事件
+		playButton.Click += PlayButton_Click;
 
-        if (descriptionText == null)
-        {
-            descriptionText = new PanelText(new Point(anchor.x, anchor.y + 3), "desc", 17, 8, Color.Wheat, mainSurface);
-            descriptionText.alignType = PanelText.AlignType.Left;
-        }
-        descriptionText.content = viewModel.description;
+		controls.Add(playButton);
+	}
 
-    }
+	// 按钮点击事件处理方法
+	private void PlayButton_Click(object sender, EventArgs e) {
+		Log.PushSys("Card played");
+
+		// 可选：添加额外的视觉反馈
+		playButton.IsEnabled = false; // 临时禁用按钮避免连点
+
+		// 使用Timer恢复按钮状态
+		System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
+			playButton.IsEnabled = true;
+		});
+	}
+
+	public void Render(CardViewModel viewModel) {
+		if (cardNameText == null) {
+			cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
+			cardNameText.alignType = PanelText.AlignType.Center;
+		}
+		cardNameText.content = viewModel.name;
+
+		if (costText == null) {
+			costText = new PanelText(new Point(anchor.x + 12, anchor.y), "mana", 5, 3, Color.AnsiCyan, mainSurface);
+			costText.alignType = PanelText.AlignType.Center;
+		}
+		costText.content = viewModel.cost.ToString();
+
+		if (descriptionText == null) {
+			descriptionText = new PanelText(new Point(anchor.x, anchor.y + 3), "desc", 17, 8, Color.Wheat, mainSurface);
+			descriptionText.alignType = PanelText.AlignType.Left;
+		}
+		descriptionText.content = viewModel.description;
+
+		// 设置按钮文本和状态
+		playButton.Text = $"Play {viewModel.name}";
+		playButton.IsVisible = true;
+
+		// 根据卡牌消耗设置按钮状态
+		// 如果需要根据能量状态禁用按钮，可以在这里添加代码
+
+		playButton.UpdateAndRedraw(default);
+	}
 }

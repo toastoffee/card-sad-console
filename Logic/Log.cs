@@ -26,13 +26,16 @@ public static class Log {
 		Push(message, LogType.Game);
 	}
 
+	public static void PushSys(string message) {
+		Push(message, LogType.System);
+	}
+
 	public static void Push(string message, LogType type) {
 		if (type == LogType.Game) {
 			gameLogs.Add(message);
 		} else {
 			systemLogs.Add(message);
 		}
-
 	}
 
 	public static void LogError(string error) {

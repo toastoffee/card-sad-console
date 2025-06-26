@@ -17,31 +17,33 @@ public partial class RogueBattleState {
 
 	private void UseCard(CardObjcet card) {
 		if (card.cost > mana) {
-			Log.Push("能量不足.");
+			Log.Push("not enough energy.");
 			return;
 		}
 
 
 		if (card != null) {
-			Log.Push($"出牌：【{card.cardModel.modelId}】");
+			Log.Push($"use hand：[{card.cardModel.modelId}]");
 			tokens.Remove(card);
 		}
 
 		mana -= card.cost;
 
-		if (card.cardModel.modelId == "打击") {
+		if (card.cardModel.modelId == nameof(CardDefine.Strike)) {
+			Log.PushSys("attacking");
 			DoDamageToEnemy(0, 6);
 		}
 
-		if (card.cardModel.modelId == "防御") {
+		if (card.cardModel.modelId == nameof(CardDefine.Defend)) {
+			Log.PushSys("defending");
 			ApplyShieldToPlayer(5);
 		}
 
-		if (card.cardModel.modelId == "重击") {
+		if (card.cardModel.modelId == nameof(CardDefine.Hit)) {
 			DoDamageToEnemy(0, 15);
 		}
 
-		if (card.cardModel.modelId == "SWAP") {
+		if (card.cardModel.modelId == nameof(CardDefine.Swap)) {
 			UseCard_SWAP();
 		}
 
@@ -80,7 +82,7 @@ public partial class RogueBattleState {
 				return;
 			}
 			ctx.type = selectCard.type;
-			Log.Push($"选择了卡牌：【{selectCard.cardModel.modelId}】，弃掉所有[{EnumTrans.Get(selectCard.type)}]");
+			Log.Push($"选择了卡牌：[{selectCard.cardModel.modelId}]，弃掉所有[{EnumTrans.Get(selectCard.type)}]");
 			GotoIdle();
 			UseCard(card);
 		};
@@ -119,7 +121,7 @@ public partial class RogueBattleState {
 		var shieldDmg = (int)MathF.Min(param.dmg, param.deffender.shield);
 		param.deffender.shield -= shieldDmg;
 		param.deffender.hp -= param.dmg - shieldDmg;
-		Log.Push($"【{param.attacker.name}】 对【{param.deffender.name}】造成 [{param.dmg}] 点伤害，剩余 {param.deffender.hp} hp {param.deffender.RemainShieldStr()}");
+		Log.Push($"[{param.attacker.name}]deal [{param.dmg}] dmg to [{param.deffender.name}]，remain hp {param.deffender.hp} shield {param.deffender.RemainShieldStr()}");
 
 		if (param.deffender == playerCharObj) {
 			Trigger_OnAfterPlayerBeAttack(param);
@@ -127,7 +129,7 @@ public partial class RogueBattleState {
 	}
 	private void GainShiled(CharObject cha, int shield) {
 		cha.shield += shield;
-		Log.Push($"【{cha.name}】 获得了 [{shield}] 点护盾，当前护盾: {cha.RemainShieldStr()}");
+		Log.Push($"[{cha.name}] gain [{shield}] shield，current: {cha.RemainShieldStr()}");
 	}
 
 	private void Trigger_OnBeforePlayerBeAttack(AttackParam param) {

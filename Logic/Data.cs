@@ -10,7 +10,7 @@
 	}
 
 	public void Render(int optionIdx) {
-		//Console.WriteLine($"[{optionIdx}] 【{cardModel.cost}】费 【{cardModel.modelId}】 [{EnumTrans.Get(cardModel.cardType)}]  {cardModel.desc}");
+		//Console.WriteLine($"[{optionIdx}] [{cardModel.cost}]费 [{cardModel.modelId}] [{EnumTrans.Get(cardModel.cardType)}]  {cardModel.desc}");
 	}
 
 	public string GetTagString() {

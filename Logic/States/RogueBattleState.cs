@@ -76,10 +76,10 @@ public partial class RogueBattleState : GameState {
 	public override void OnEnter() {
 		SetupEnemys();
 
-		AddOriginalToDeck("打击", 4);
-		AddOriginalToDeck("防御", 5);
-		AddOriginalToDeck("SWAP", 1);
-		AddOriginalToDeck("重击", 1);
+		AddOriginalToDeck("Strike", 4);
+		AddOriginalToDeck("Defend", 5);
+		AddOriginalToDeck("Swap", 1);
+		AddOriginalToDeck("Hit", 1);
 
 		deck.Shuffle();
 		OnRoundStart();

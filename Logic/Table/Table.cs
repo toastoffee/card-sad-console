@@ -10,26 +10,26 @@ public class CardModel {
 }
 [AutoModelTable(typeof(CardModel))]
 public static class CardDefine {
-	public static CardModel 打击 => new CardModel {
-		modelId = nameof(打击),
+	public static CardModel Strike => new CardModel {
+		modelId = nameof(Strike),
 		cost = 1,
 		desc = "cause 6 damage",
 		cardType = CardType.WEAPON,
 	};
-	public static CardModel SWAP => new CardModel {
-		modelId = nameof(SWAP),
+	public static CardModel Swap => new CardModel {
+		modelId = nameof(Swap),
 		cost = 1,
 		desc = "discard all weapons/armors, and draw other kind as same counts",
 		cardType = CardType.TRINKET,
 	};
-	public static CardModel 防御 => new CardModel {
-		modelId = nameof(防御),
+	public static CardModel Defend => new CardModel {
+		modelId = nameof(Defend),
 		cost = 1,
 		desc = "gain 5 defend",
 		cardType = CardType.ARMOR,
 	};
-	public static CardModel 重击 => new CardModel {
-		modelId = nameof(重击),
+	public static CardModel Hit => new CardModel {
+		modelId = nameof(Hit),
 		cost = 2,
 		desc = "cause 15 damage",
 		cardType = CardType.WEAPON,

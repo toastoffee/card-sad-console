@@ -5,7 +5,7 @@ using CardConsole.Visual;
 Settings.WindowTitle = "My SadConsole Game";
 
 Builder configuration = new Builder()
-    .SetScreenSize(120, 38)
+    .SetScreenSize(240, 70)
     .SetStartingScreen<RootScreen>()
     .IsStartingScreenFocused(true)
     ;

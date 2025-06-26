@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CardConsole.Visual;
 
 public partial class RogueBattleState : GameState {
 	public static RogueBattleState instance;
 
 	public CharObject playerCharObj = new() {
-		name = "玩家",
+		name = "Player",
 		hp = 70,
 		maxHp = 70,
 	};
@@ -25,9 +26,37 @@ public partial class RogueBattleState : GameState {
 	public List<CardObjcet> deck = new();
 	public List<CardObjcet> tokens = new();
 
+	private ViewModel _viewModel;
+
 	public struct CardSelectInput {
 		public bool isBreak;
 		public CardObjcet card;
+	}
+
+	public RogueBattleState() {
+		instance = this;
+		_viewModel = CardGame.instance.viewModel;
+	}
+
+	public void SyncToViewModel() {
+		if (_viewModel == null) return;
+
+		_viewModel.turn = roundIdx;
+		_viewModel.eng = mana;
+		_viewModel.maxEng = 3;
+
+		_viewModel.playerHp = playerCharObj.hp;
+		_viewModel.maxPlayerHp = playerCharObj.maxHp;
+
+		_viewModel.enemies.Clear();
+		foreach (var enemy in enemys) {
+			_viewModel.enemies.Add(new EnemyViewModel {
+				name = enemy.name,
+				hp = enemy.hp,
+				maxHp = enemy.maxHp,
+				intention = enemy.enemyAction?.ForeshowAction() ?? "unknown"
+			});
+		}
 	}
 
 	public override void OnEnter() {
@@ -40,11 +69,13 @@ public partial class RogueBattleState : GameState {
 
 		deck.Shuffle();
 		OnRoundStart();
+
+		SyncToViewModel();
 	}
 
 	private void SetupEnemys() {
 		var enemy = new CharObject {
-			name = "树人",
+			name = "Treeman",
 			hp = 27,
 			maxHp = 27,
 		};
@@ -58,6 +89,8 @@ public partial class RogueBattleState : GameState {
 		} else if (state == GameStateEnum.CARD_SELECTING) {
 			OnCardSelectingTick();
 		}
+
+		SyncToViewModel();
 	}
 
 	private void OnIdleTick() {
@@ -89,7 +122,7 @@ public partial class RogueBattleState : GameState {
 		if (CardGame.instance.lastInputChar == 'e') {
 			var input = new CardSelectInput {
 				isBreak = true,
-				card = null,
+				card = null!,
 			};
 			selectCardHandler?.Invoke(input);
 			GotoIdle();
@@ -111,17 +144,6 @@ public partial class RogueBattleState : GameState {
 		}
 		state = GameStateEnum.CARD_SELECTING;
 		CardGame.instance.lastInputChar = null;
-	}
-
-	public override void Render() {
-		RenderRound();
-		playerCharObj.Render();
-		//Console.WriteLine();
-		RenderEnemys();
-		//Console.WriteLine();
-		RenderDeckAndYard();
-		//Console.WriteLine();
-		RenderTokensAndMana();
 	}
 
 	private void AddOriginalToDeck(string id, int cnt) {
@@ -189,42 +211,16 @@ public partial class RogueBattleState : GameState {
 		CardGame.instance.lastInputChar = null;
 
 		OnRoundStart();
+
+		SyncToViewModel();
 	}
 
 	private void OnRoundStart() {
 		playerCharObj.shield = 0;
 		mana = 3;
 		DrawFromDeck(4);
-	}
 
-
-	private void RenderEnemys() {
-		//Console.WriteLine("敌人：");
-		//Console.WriteLine();
-		//for (int i = 0; i < enemys.Count; i++) {
-		//	CharObject? enemy = enemys[i];
-		//	enemy.Render(i + 1);
-		//}
-	}
-
-	private void RenderRound() {
-		//Console.WriteLine($"第【{roundIdx}】回合");
-		//Console.WriteLine();
-	}
-
-	private void RenderDeckAndYard() {
-		//Console.WriteLine($"牌库剩余： {deck.Count} 弃牌堆：  {yard.Count}");
-	}
-
-	private void RenderTokensAndMana() {
-		//Console.WriteLine($"手牌：            能量：【{mana}】");
-		//Console.WriteLine();
-		//for (int i = 0; i < tokens.Count; i++) {
-		//	tokens[i].Render(i + 1);
-		//	Console.WriteLine();
-		//}
-		//Console.WriteLine();
-		//Console.WriteLine($"- {EnumTrans.Get(state)} -");
+		SyncToViewModel();
 	}
 }
 

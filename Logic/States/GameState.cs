@@ -6,5 +6,4 @@ using System.Threading.Tasks;
 
 public abstract class GameState : LiteState {
 	public abstract void OnTick();
-	public abstract void Render();
 }

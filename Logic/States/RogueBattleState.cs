@@ -38,7 +38,8 @@ public partial class RogueBattleState : GameState {
 		_viewModel = CardGame.instance.viewModel;
 	}
 
-	public void SyncToViewModel() {
+	public void SyncToViewModel()
+	{
 		if (_viewModel == null) return;
 
 		_viewModel.turn = roundIdx;
@@ -49,12 +50,25 @@ public partial class RogueBattleState : GameState {
 		_viewModel.maxPlayerHp = playerCharObj.maxHp;
 
 		_viewModel.enemies.Clear();
-		foreach (var enemy in enemys) {
-			_viewModel.enemies.Add(new EnemyViewModel {
+		foreach (var enemy in enemys)
+		{
+			_viewModel.enemies.Add(new EnemyViewModel
+			{
 				name = enemy.name,
 				hp = enemy.hp,
 				maxHp = enemy.maxHp,
 				intention = enemy.enemyAction?.ForeshowAction() ?? "unknown"
+			});
+		}
+
+		_viewModel.handCards.Clear();
+		foreach (var card in tokens)
+		{
+			_viewModel.handCards.Add(new CardViewModel
+			{
+				name = card.name,
+				cost = card.cost,
+				description = card.cardModel.desc
 			});
 		}
 	}
@@ -149,7 +163,8 @@ public partial class RogueBattleState : GameState {
 	private void AddOriginalToDeck(string id, int cnt) {
 		for (int i = 0; i < cnt; i++) {
 			var card = new CardObjcet();
-			card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
+
+            card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
 			deck.Add(card);
 		}
 	}

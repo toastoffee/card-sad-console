@@ -11,7 +11,11 @@ class CardGame {
 	public LiteStateEngine stateEngine;
 	public ViewModel viewModel = new();
 
-	public void Setup() {
+	public CardGame() {
+		instance = this;
+	}
+
+    public void Setup() {
 		var battleState = new RogueBattleState();
 		RogueBattleState.instance = battleState;
 		stateEngine = new LiteStateEngine(new List<LiteState> {
@@ -22,6 +26,7 @@ class CardGame {
 	public void Tick() {
 		var state = stateEngine.frontState as GameState;
 		state.OnTick();
+
 		// 添加日志同步
 		SyncLogsToViewModel();
 	}

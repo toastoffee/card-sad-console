@@ -13,20 +13,50 @@ internal class RootScreen : ScreenObject {
 		Children.Add(view.GetMainSurface());
 		Children.Add(view.GetLogSurface());
 
-		// 初始化游戏
-		CardGame.instance = new CardGame();
+        // 初始化游戏
+        CardGame.instance = new CardGame();
 		CardGame.instance.viewModel = viewModel;
 		CardGame.instance.Setup();
-	}
+
+        //RogueBattleState.instance
+
+    }
 
 	public override bool ProcessKeyboard(Keyboard keyboard) {
 		bool handled = false;
 
-		if (keyboard.IsKeyPressed(Keys.Up)) {
+		if (keyboard.IsKeyPressed(Keys.E))
+		{
+			CardGame.instance.lastInputChar = 'e';
+			handled = true;
+		}
+		else if (keyboard.IsKeyPressed(Keys.D1))
+		{
+			CardGame.instance.lastInputChar = '1';
+			handled = true;
+		}
+		else if (keyboard.IsKeyPressed(Keys.D2))
+		{
+			CardGame.instance.lastInputChar = '2';
+			handled = true;
+		}
+		else if (keyboard.IsKeyPressed(Keys.D3))
+		{
+			CardGame.instance.lastInputChar = '3';
+			handled = true;
+		}
+		else if (keyboard.IsKeyPressed(Keys.D4))
+		{
+			CardGame.instance.lastInputChar = '4';
+			handled = true;
+		}
+		else if (keyboard.IsKeyPressed(Keys.D5))
+		{
+			CardGame.instance.lastInputChar = '5';
 			handled = true;
 		}
 
-		return handled;
+            return handled;
 	}
 
 	public override void Update(TimeSpan delta) {

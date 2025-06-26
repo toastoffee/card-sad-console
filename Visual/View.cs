@@ -18,9 +18,10 @@ internal class View {
 	public PanelText enemyHealthText;
 	public PanelText enemyIntentionText;
 	private List<EnemyView> enemyViews = new List<EnemyView>();
+	private List<CardView> cardViews = new List<CardView>();
 
-	// 添加初始化表面的构造函数
-	public View() {
+    // 添加初始化表面的构造函数
+    public View() {
 		int width = Game.Instance.ScreenCellsX;
 		int height = Game.Instance.ScreenCellsY;
 
@@ -59,7 +60,8 @@ internal class View {
 	}
 
 	// 将原来的Render方法重命名为RenderMainContent
-	private void RenderMainContent(ViewModel viewModel) {
+	private void RenderMainContent(ViewModel viewModel)
+	{
 		turnText = new PanelText(new Point(3, 1), "Turn", 6, 3, Color.Wheat, _mainSurface);
 		turnText.alignType = PanelText.AlignType.Center;
 		turnText.content = viewModel.turn.ToString();
@@ -73,12 +75,14 @@ internal class View {
 		playerHealthText.content = $"{viewModel.playerHp}/{viewModel.maxPlayerHp}";
 
 		// 确保敌人视图数量与敌人模型数量一致
-		while (enemyViews.Count < viewModel.enemies.Count) {
+		while (enemyViews.Count < viewModel.enemies.Count)
+		{
 			int index = enemyViews.Count;
 			int yPosition = 7; // 初始Y位置
 
 			// 计算当前敌人的Y位置，考虑前面所有敌人的高度
-			for (int j = 0; j < index; j++) {
+			for (int j = 0; j < index; j++)
+			{
 				yPosition += enemyViews[j].TotalHeight;
 			}
 
@@ -87,13 +91,35 @@ internal class View {
 		}
 
 		// 渲染每个敌人
-		for (int i = 0; i < viewModel.enemies.Count; i++) {
+		for (int i = 0; i < viewModel.enemies.Count; i++)
+		{
 			enemyViews[i].Render(viewModel.enemies[i]);
 		}
-	}
 
-	// 将日志渲染方法移到这里
-	private void RenderLogArea(ViewModel viewModel) {
+		// 确保卡牌视图数量与手牌模型数量一致
+		while (cardViews.Count < viewModel.handCards.Count)
+		{
+			int index = cardViews.Count;
+			int xPosition = 10; // 初始X位置
+
+			for (int i = 0; i < index; i++)
+			{
+				xPosition += cardViews[i].TotalWidth + 2;
+			}
+
+			cardViews.Add(new CardView(xPosition, 20, _mainSurface));
+		}
+
+        // 渲染每张卡牌
+        for (int i = 0; i < viewModel.handCards.Count; i++)
+		{
+			cardViews[i].Render(viewModel.handCards[i]);
+        }
+
+    }
+
+    // 将日志渲染方法移到这里
+    private void RenderLogArea(ViewModel viewModel) {
 		// 确定日志区域的高度划分
 		int totalHeight = _logSurface.Height;
 		int headerHeight = 1;
@@ -179,4 +205,46 @@ internal class EnemyView {
 		}
 		enemyIntentionText.content = viewModel.intention;
 	}
+}
+
+internal class CardView
+{
+    public (int x, int y) anchor;
+	public PanelText cardNameText;
+	public PanelText costText;
+	public PanelText descriptionText;
+	private ScreenSurface mainSurface;
+
+	public int TotalWidth => 17;
+
+	public CardView(int x, int y, ScreenSurface surface)
+	{
+		anchor = (x, y);
+		mainSurface = surface;
+    }
+
+	public void Render(CardViewModel viewModel)
+	{
+        if (cardNameText == null)
+        {
+            cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
+            cardNameText.alignType = PanelText.AlignType.Center;
+        }
+        cardNameText.content = viewModel.name;
+
+        if (costText == null)
+        {
+            costText = new PanelText(new Point(anchor.x + 12, anchor.y), "mana", 5, 3, Color.AnsiCyan, mainSurface);
+            costText.alignType = PanelText.AlignType.Center;
+        }
+        costText.content = viewModel.cost.ToString();
+
+        if (descriptionText == null)
+        {
+            descriptionText = new PanelText(new Point(anchor.x, anchor.y + 3), "desc", 17, 8, Color.Wheat, mainSurface);
+            descriptionText.alignType = PanelText.AlignType.Left;
+        }
+        descriptionText.content = viewModel.description;
+
+    }
 }

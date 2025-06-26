@@ -4,6 +4,8 @@ using CardConsole.Visual;
 
 Settings.WindowTitle = "My SadConsole Game";
 
+AutoModelTableImpl.InitTables();
+
 Builder configuration = new Builder()
     .SetScreenSize(240, 70)
     .SetStartingScreen<RootScreen>()

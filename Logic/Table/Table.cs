@@ -13,25 +13,25 @@ public static class CardDefine {
 	public static CardModel 打击 => new CardModel {
 		modelId = nameof(打击),
 		cost = 1,
-		desc = "造成6点伤害",
+		desc = "cause 6 damage",
 		cardType = CardType.WEAPON,
 	};
 	public static CardModel SWAP => new CardModel {
 		modelId = nameof(SWAP),
 		cost = 1,
-		desc = "弃手中所有武器牌/防具牌，抽等量的另一种牌",
+		desc = "discard all weapons/armors, and draw other kind as same counts",
 		cardType = CardType.TRINKET,
 	};
 	public static CardModel 防御 => new CardModel {
 		modelId = nameof(防御),
 		cost = 1,
-		desc = "获得5点防御",
+		desc = "gain 5 defend",
 		cardType = CardType.ARMOR,
 	};
 	public static CardModel 重击 => new CardModel {
 		modelId = nameof(重击),
 		cost = 2,
-		desc = "造成15点伤害",
+		desc = "cause 15 damage",
 		cardType = CardType.WEAPON,
 	};
 }

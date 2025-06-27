@@ -18,9 +18,13 @@ public partial class RogueBattleState : GameState {
 
 	public int roundIdx = 0;
 	public int mana = 0;
-	public GameStateEnum state;
 	public Action<CardSelectInput> selectCardHandler;
 	public object selectCardCtx;
+
+	// 添加子状态引擎
+	private LiteStateEngine subStateEngine;
+	private IdleState idleState;
+	private CardSelectingState cardSelectingState;
 
 	public List<CardObjcet> yard = new();
 	public List<CardObjcet> deck = new();
@@ -36,24 +40,31 @@ public partial class RogueBattleState : GameState {
 	public RogueBattleState() {
 		instance = this;
 		_viewModel = CardGame.instance.viewModel;
+
+		// 初始化子状态
+		idleState = new IdleState(this);
+		cardSelectingState = new CardSelectingState(this);
+
+		// 创建子状态引擎
+		subStateEngine = new LiteStateEngine(new List<LiteState> {
+			idleState,
+			cardSelectingState
+		});
 	}
 
-	public void SyncToViewModel()
-	{
+	public void SyncToViewModel() {
 		if (_viewModel == null) return;
 
 		_viewModel.turn = roundIdx;
 		_viewModel.eng = mana;
 		_viewModel.maxEng = 3;
-
 		_viewModel.playerHp = playerCharObj.hp;
 		_viewModel.maxPlayerHp = playerCharObj.maxHp;
+		_viewModel.playerShield = playerCharObj.shield; // 同步护盾值
 
 		_viewModel.enemies.Clear();
-		foreach (var enemy in enemys)
-		{
-			_viewModel.enemies.Add(new EnemyViewModel
-			{
+		foreach (var enemy in enemys) {
+			_viewModel.enemies.Add(new EnemyViewModel {
 				name = enemy.name,
 				hp = enemy.hp,
 				maxHp = enemy.maxHp,
@@ -62,10 +73,8 @@ public partial class RogueBattleState : GameState {
 		}
 
 		_viewModel.handCards.Clear();
-		foreach (var card in tokens)
-		{
-			_viewModel.handCards.Add(new CardViewModel
-			{
+		foreach (var card in tokens) {
+			_viewModel.handCards.Add(new CardViewModel {
 				name = card.name,
 				cost = card.cost,
 				description = card.cardModel.desc
@@ -98,73 +107,30 @@ public partial class RogueBattleState : GameState {
 	}
 
 	public override void OnTick() {
-		if (state == GameStateEnum.IDLE) {
-			OnIdleTick();
-		} else if (state == GameStateEnum.CARD_SELECTING) {
-			OnCardSelectingTick();
+		// 委托给子状态处理
+		var currentState = subStateEngine.frontState;
+		if (currentState is IdleState idle) {
+			idle.OnTick();
+		} else if (currentState is CardSelectingState cardSelecting) {
+			cardSelecting.OnTick();
 		}
 
 		SyncToViewModel();
 	}
 
-	private void OnIdleTick() {
-		int idx = -1;
-		try {
-			idx = Convert.ToInt32(CardGame.instance.lastInputChar?.ToString()) - 1;
-		} catch { }
-		if (idx >= 0 && idx < tokens.Count) {
-			PreUseCard(idx);
-		}
-		if (CardGame.instance.lastInputChar == 'e') {
-			EndAndPushRound();
-		}
-	}
-
-	private void OnCardSelectingTick() {
-		int idx = -1;
-		try {
-			idx = Convert.ToInt32(CardGame.instance.lastInputChar?.ToString()) - 1;
-		} catch { }
-		if (idx >= 0 && idx < tokens.Count) {
-			var card = tokens[idx];
-			var input = new CardSelectInput {
-				isBreak = false,
-				card = card,
-			};
-			selectCardHandler?.Invoke(input);
-		}
-		if (CardGame.instance.lastInputChar == 'e') {
-			var input = new CardSelectInput {
-				isBreak = true,
-				card = null!,
-			};
-			selectCardHandler?.Invoke(input);
-			GotoIdle();
-		}
-	}
-
 	public void GotoIdle() {
-		if (state == GameStateEnum.IDLE) {
-			return;
-		}
-		state = GameStateEnum.IDLE;
-		selectCardHandler = null;
-		CardGame.instance.lastInputChar = null;
+		subStateEngine.ReplaceTop<IdleState>();
 	}
 
 	public void GotoCardSelect() {
-		if (state == GameStateEnum.CARD_SELECTING) {
-			return;
-		}
-		state = GameStateEnum.CARD_SELECTING;
-		CardGame.instance.lastInputChar = null;
+		subStateEngine.ReplaceTop<CardSelectingState>();
 	}
 
 	private void AddOriginalToDeck(string id, int cnt) {
 		for (int i = 0; i < cnt; i++) {
 			var card = new CardObjcet();
 
-            card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
+			card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
 			deck.Add(card);
 		}
 	}
@@ -183,9 +149,9 @@ public partial class RogueBattleState : GameState {
 		}
 	}
 
-	private void PickFromDeck(CardObjcet card) {
+	public void PickFromDeck(CardObjcet card) {
 		if (!deck.Contains(card)) {
-			Log.Push($"[ERROR] 卡组中不包含 {card.name}");
+			Log.Push($"[ERROR] deck not contain {card.name}");
 			return;
 		}
 		Log.Push($"draw from deck [{card.name}]");
@@ -200,7 +166,7 @@ public partial class RogueBattleState : GameState {
 		deck.Shuffle();
 	}
 
-	private void DiscardCard(CardObjcet card) {
+	public void DiscardCard(CardObjcet card) {
 		tokens.Remove(card);
 		yard.Add(card);
 	}
@@ -215,7 +181,7 @@ public partial class RogueBattleState : GameState {
 		}
 	}
 
-	private void EndAndPushRound() {
+	public void EndAndPushRound() {
 		Log.Push($"Turn[{roundIdx}]end.");
 		DisacrdAllTokens();
 
@@ -223,7 +189,6 @@ public partial class RogueBattleState : GameState {
 
 		roundIdx++;
 		Log.Push($"Turn[{roundIdx}]start.");
-		CardGame.instance.lastInputChar = null;
 
 		OnRoundStart();
 

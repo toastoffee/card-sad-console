@@ -10,6 +10,7 @@ internal class ViewModel {
 	public int maxEng;
 	public int playerHp;
 	public int maxPlayerHp;
+	public int playerShield; // 添加玩家护盾值
 	public List<EnemyViewModel> enemies = new List<EnemyViewModel>(); // 添加敌人视图模型列表
 	public List<CardViewModel> handCards = new List<CardViewModel>(); // 玩家手牌列表
 

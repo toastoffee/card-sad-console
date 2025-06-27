@@ -24,26 +24,27 @@ internal class RootScreen : ScreenObject {
 
 	public override bool ProcessKeyboard(Keyboard keyboard) {
 		bool handled = false;
-
-		if (keyboard.IsKeyPressed(Keys.E)) {
-			CardGame.instance.lastInputChar = 'e';
-			handled = true;
-		} else if (keyboard.IsKeyPressed(Keys.D1)) {
-			CardGame.instance.lastInputChar = '1';
-			handled = true;
-		} else if (keyboard.IsKeyPressed(Keys.D2)) {
-			CardGame.instance.lastInputChar = '2';
-			handled = true;
-		} else if (keyboard.IsKeyPressed(Keys.D3)) {
-			CardGame.instance.lastInputChar = '3';
-			handled = true;
-		} else if (keyboard.IsKeyPressed(Keys.D4)) {
-			CardGame.instance.lastInputChar = '4';
-			handled = true;
-		} else if (keyboard.IsKeyPressed(Keys.D5)) {
-			CardGame.instance.lastInputChar = '5';
-			handled = true;
-		}
+		//if (keyboard.IsKeyPressed(Keys.E)) {
+		//	GameInput.Set(GameInput.Type.END_TURN);
+		//	handled = true;
+		//} else if (keyboard.IsKeyPressed(Keys.D1)) {
+		//	GameInput.Set(GameInput.Type.CARD, new InputValue {
+		//		intValue = 0,
+		//	});
+		//	handled = true;
+		//} else if (keyboard.IsKeyPressed(Keys.D2)) {
+		//	CardGame.instance.lastInputChar = '2';
+		//	handled = true;
+		//} else if (keyboard.IsKeyPressed(Keys.D3)) {
+		//	CardGame.instance.lastInputChar = '3';
+		//	handled = true;
+		//} else if (keyboard.IsKeyPressed(Keys.D4)) {
+		//	CardGame.instance.lastInputChar = '4';
+		//	handled = true;
+		//} else if (keyboard.IsKeyPressed(Keys.D5)) {
+		//	CardGame.instance.lastInputChar = '5';
+		//	handled = true;
+		//}
 
 		return handled;
 	}
@@ -51,7 +52,7 @@ internal class RootScreen : ScreenObject {
 	public override void Update(TimeSpan delta) {
 		// 更新游戏逻辑
 		CardGame.instance.Tick();
-		CardGame.instance.lastInputChar = null;
+		GameInput.Reset();
 		// 调用View渲染所有内容
 		view.Render(viewModel);
 	}

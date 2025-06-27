@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 class CardGame {
-	public char? lastInputChar = null;
 	public static CardGame instance;
 	public LiteStateEngine stateEngine;
 	public ViewModel viewModel = new();

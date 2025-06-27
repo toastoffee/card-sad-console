@@ -15,12 +15,14 @@ internal class View {
 	public PanelText turnText;
 	public PanelText playerHealthText;
 	public PanelText playerEnergyText;
+	public PanelText playerShieldText; // 添加玩家护盾文本字段
 	public PanelText enemyNameText;
 	public PanelText enemyHealthText;
 	public PanelText enemyIntentionText;
 	public ControlHost controls = new();
 	private List<EnemyView> enemyViews = new List<EnemyView>();
 	private List<CardView> cardViews = new List<CardView>();
+	private SadConsole.UI.Controls.ButtonBox endTurnButton; // 添加回合结束按钮字段
 
 	// 添加初始化表面的构造函数
 	public View() {
@@ -38,6 +40,31 @@ internal class View {
 		_logSurface = new ScreenSurface(logWidth, height);
 		_logSurface.Position = new Point(gameWidth, 0);
 		_logSurface.UseMouse = false;
+
+		// 初始化回合结束按钮
+		int buttonWidth = 12;
+		int buttonHeight = 3;
+		int buttonX = _mainSurface.Width - buttonWidth - 2; // 距离右边界2个单位
+		int buttonY = _mainSurface.Height - buttonHeight - 2; // 距离底边界2个单位
+
+		endTurnButton = new ButtonBox(buttonWidth, buttonHeight) {
+			Position = new Point(buttonX, buttonY),
+			Text = "End Turn"
+		};
+
+		// 绑定按钮点击事件
+		endTurnButton.Click += EndTurnButton_Click;
+		controls.Add(endTurnButton);
+	}
+
+	// 回合结束按钮点击事件处理方法
+	private void EndTurnButton_Click(object sender, EventArgs e) {
+		GameInput.Set(GameInput.Type.END_TURN);
+
+		endTurnButton.IsEnabled = false; // 临时禁用按钮避免连点
+		System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
+			endTurnButton.IsEnabled = true;
+		});
 	}
 
 	// 添加获取表面的方法，供RootScreen添加到其Children集合
@@ -76,6 +103,15 @@ internal class View {
 		playerHealthText.alignType = PanelText.AlignType.Center;
 		playerHealthText.content = $"{viewModel.playerHp}/{viewModel.maxPlayerHp}";
 
+		 // 添加护盾显示 - 只在有护盾时显示
+		if (viewModel.playerShield > 0) {
+			if (playerShieldText == null) {
+				playerShieldText = new PanelText(new Point(3, 13), "Shield", 10, 3, Color.LightBlue, _mainSurface);
+				playerShieldText.alignType = PanelText.AlignType.Center;
+			}
+			playerShieldText.content = viewModel.playerShield.ToString();
+		}
+
 		// 确保敌人视图数量与敌人模型数量一致
 		while (enemyViews.Count < viewModel.enemies.Count) {
 			int index = enemyViews.Count;
@@ -99,18 +135,27 @@ internal class View {
 		while (cardViews.Count < viewModel.handCards.Count) {
 			int index = cardViews.Count;
 			int xPosition = 10; // 初始X位置
-
+			// 计算当前卡牌的X位置，考虑前面所有卡牌的宽度
 			for (int i = 0; i < index; i++) {
 				xPosition += cardViews[i].TotalWidth + 2;
 			}
 
-			cardViews.Add(new CardView(xPosition, 20, _mainSurface, controls));
+			// 计算Y位置 - 锚定在屏幕底部，考虑按钮高度
+			int cardHeight = 16; // 卡牌内容高度（名称3 + 描述8 + 间距）+ 按钮高度5
+			int yPosition = _mainSurface.Height - cardHeight - 2; // 距离底部2个单位的边距
+
+			cardViews.Add(new CardView(xPosition, yPosition, _mainSurface, controls));
 		}
 
 		// 渲染每张卡牌
-		for (int i = 0; i < viewModel.handCards.Count; i++) {
-			cardViews[i].Render(i, viewModel.handCards[i]);
+		for (int i = 0; i < cardViews.Count; i++) {
+			var cardModel = viewModel.handCards.ElementAtOrDefault(i);
+			cardViews[i].Render(i, cardModel, i < viewModel.handCards.Count); // 隐藏多余的卡牌视图
 		}
+
+		// 确保回合结束按钮始终可见
+		endTurnButton.IsVisible = true;
+		endTurnButton.UpdateAndRedraw(default);
 	}
 
 	// 将日志渲染方法移到这里
@@ -231,14 +276,33 @@ internal class CardView {
 
 	// 按钮点击事件处理方法
 	private void PlayButton_Click(object sender, EventArgs e) {
+		GameInput.Set(GameInput.Type.CARD, new InputValue {
+			intValue = idx,
+		});
+
 		playButton.IsEnabled = false; // 临时禁用按钮避免连点
 		System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
 			playButton.IsEnabled = true;
 		});
 	}
 
-	public void Render(int idx, CardViewModel viewModel) {
+	public void Render(int idx, CardViewModel viewModel, bool isShow) {
 		this.idx = idx;
+
+		if (!isShow) {
+			// 从 ControlHost 中完全移除按钮
+			if (playButton.Parent != null) {
+				((ControlHost)playButton.Parent).Remove(playButton);
+			}
+			return;
+		}
+
+		// 确保按钮在 ControlHost 中
+		if (playButton.Parent == null) {
+			((ControlHost)mainSurface.SadComponents.OfType<ControlHost>().First()).Add(playButton);
+		}
+
+		// 其余渲染逻辑...
 		if (cardNameText == null) {
 			cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
 			cardNameText.alignType = PanelText.AlignType.Center;
@@ -246,7 +310,8 @@ internal class CardView {
 		cardNameText.content = viewModel.name;
 
 		if (costText == null) {
-			costText = new PanelText(new Point(anchor.x + 12, anchor.y), "mana", 5, 3, Color.AnsiCyan, mainSurface);
+			costText = new PanelText(new Point(anchor.x + 12, anchor.y), "mana", 5, 3, Color.Orange, mainSurface);
+			costText.contentColor = Color.Orange;
 			costText.alignType = PanelText.AlignType.Center;
 		}
 		costText.content = viewModel.cost.ToString();
@@ -257,13 +322,8 @@ internal class CardView {
 		}
 		descriptionText.content = viewModel.description;
 
-		// 设置按钮文本和状态
 		playButton.Text = $"Play {viewModel.name}";
 		playButton.IsVisible = true;
-
-		// 根据卡牌消耗设置按钮状态
-		// 如果需要根据能量状态禁用按钮，可以在这里添加代码
-
 		playButton.UpdateAndRedraw(default);
 	}
 }

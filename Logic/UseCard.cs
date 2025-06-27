@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 public partial class RogueBattleState {
-	private void PreUseCard(int idx) {
+	public void PreUseCard(int idx) {
 		var card = tokens[idx];
-		if (card.name == "SWAP") {
+		if (card.name == nameof(CardDefine.Swap)) {
 			PreuseCard_SWAP(card);
 			return;
 		}
@@ -30,12 +30,10 @@ public partial class RogueBattleState {
 		mana -= card.cost;
 
 		if (card.cardModel.modelId == nameof(CardDefine.Strike)) {
-			Log.PushSys("attacking");
 			DoDamageToEnemy(0, 6);
 		}
 
 		if (card.cardModel.modelId == nameof(CardDefine.Defend)) {
-			Log.PushSys("defending");
 			ApplyShieldToPlayer(5);
 		}
 
@@ -70,6 +68,7 @@ public partial class RogueBattleState {
 
 	private void PreuseCard_SWAP(CardObjcet card) {
 		GotoCardSelect();
+		Log.Push("chose a card to swap (Weapon or Armod.)");
 		var ctx = new SWAP_Context();
 		selectCardHandler = (input) => {
 			var selectCard = input.card;
@@ -78,19 +77,25 @@ public partial class RogueBattleState {
 				return;
 			}
 			if (selectCard.type != CardType.WEAPON && selectCard.type != CardType.ARMOR) {
-				Log.Push($"只能弃掉武器或防具卡牌，当前卡牌类型: {EnumTrans.Get(selectCard.type)}");
+				Log.Push($"u can only select Weapon or Armor.");
 				return;
 			}
 			ctx.type = selectCard.type;
-			Log.Push($"选择了卡牌：[{selectCard.cardModel.modelId}]，弃掉所有[{EnumTrans.Get(selectCard.type)}]");
-			GotoIdle();
+			Log.Push($"chosen：[{selectCard.cardModel.modelId}]，discard all [{EnumTrans.Get(selectCard.type)}]");
+			selectCardCtx = ctx;
 			UseCard(card);
+			GotoIdle();
 		};
 		selectCardCtx = ctx;
 	}
 
 	private void UseCard_SWAP() {
 		var ctx = selectCardCtx as SWAP_Context;
+		if (ctx == null) {
+			Log.Push("[ERROR] SWAP context is null!");
+			return;
+		}
+
 		var drawType = ctx.type == CardType.WEAPON ? CardType.ARMOR : CardType.WEAPON;
 		var discardCnt = 0;
 		for (int i = 0; i < tokens.Count; i++) {
@@ -104,6 +109,8 @@ public partial class RogueBattleState {
 			if (draw != null) {
 				PickFromDeck(draw);
 			}
+			// 清理上下文
+			selectCardCtx = null;
 		}
 	}
 

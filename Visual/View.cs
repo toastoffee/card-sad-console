@@ -109,9 +109,8 @@ internal class View {
 
 		// 渲染每张卡牌
 		for (int i = 0; i < viewModel.handCards.Count; i++) {
-			cardViews[i].Render(viewModel.handCards[i]);
+			cardViews[i].Render(i, viewModel.handCards[i]);
 		}
-
 	}
 
 	// 将日志渲染方法移到这里
@@ -208,6 +207,7 @@ internal class CardView {
 	public PanelText cardNameText;
 	public PanelText costText;
 	public PanelText descriptionText;
+	public int idx;
 	private ScreenSurface mainSurface;
 	private SadConsole.UI.Controls.ButtonBox playButton; // 添加按钮字段
 
@@ -231,18 +231,14 @@ internal class CardView {
 
 	// 按钮点击事件处理方法
 	private void PlayButton_Click(object sender, EventArgs e) {
-		Log.PushSys("Card played");
-
-		// 可选：添加额外的视觉反馈
 		playButton.IsEnabled = false; // 临时禁用按钮避免连点
-
-		// 使用Timer恢复按钮状态
 		System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
 			playButton.IsEnabled = true;
 		});
 	}
 
-	public void Render(CardViewModel viewModel) {
+	public void Render(int idx, CardViewModel viewModel) {
+		this.idx = idx;
 		if (cardNameText == null) {
 			cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
 			cardNameText.alignType = PanelText.AlignType.Center;

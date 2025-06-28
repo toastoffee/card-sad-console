@@ -55,12 +55,14 @@ public partial class RogueBattleState : GameState {
 	public void SyncToViewModel() {
 		if (_viewModel == null) return;
 
+		_viewModel.currentStateType = GameStateType.Battle; // 设置状态类型
 		_viewModel.turn = roundIdx;
 		_viewModel.eng = mana;
 		_viewModel.maxEng = 3;
 		_viewModel.playerHp = playerCharObj.hp;
 		_viewModel.maxPlayerHp = playerCharObj.maxHp;
 		_viewModel.playerShield = playerCharObj.shield; // 同步护盾值
+		_viewModel.playerProp = RoguePlayerData.Instance.totalProp; // 同步玩家总属性
 
 		_viewModel.enemies.Clear();
 		foreach (var enemy in enemys) {
@@ -107,6 +109,12 @@ public partial class RogueBattleState : GameState {
 	}
 
 	public override void OnTick() {
+		if (GameInput.Read(GameInput.Type.SKIP_BATTLE)) {
+			Log.PushSys("Skip battle.");
+			CardGame.instance.stateEngine.ReplaceTop<RogueInitState>();
+			return;
+		}
+
 		// 委托给子状态处理
 		var currentState = subStateEngine.frontState;
 		if (currentState is IdleState idle) {

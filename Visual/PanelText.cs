@@ -1,6 +1,4 @@
-﻿
-
-using SadConsole;
+﻿using SadConsole;
 
 namespace CardConsole.Visual;
 internal class PanelText {
@@ -37,6 +35,19 @@ internal class PanelText {
 		this.height = height;
 		this.color = color;
 		this.canvas = canvas;
+	}
+
+	// 添加设置位置的方法
+	public void SetPosition(Point newPosition) {
+		this.position = newPosition;
+		UpdateVisual();
+	}
+
+	// 添加设置尺寸的方法
+	public void SetSize(int newWidth, int newHeight) {
+		this.width = newWidth;
+		this.height = newHeight;
+		UpdateVisual();
 	}
 
 	public void UpdateVisual() {

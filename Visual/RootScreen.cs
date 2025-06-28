@@ -8,44 +8,28 @@ namespace CardConsole.Visual;
 internal class RootScreen : ScreenObject {
 	public ViewModel viewModel = new ViewModel();
 	public View view = new View();
+	
+	private GameStateType currentDisplayedState = GameStateType.Battle;
 
 	public RootScreen() {
-		Children.Add(view.GetMainSurface());
+		// 始终添加Info和Log表面
+		Children.Add(view.GetInfoSurface());
 		Children.Add(view.GetLogSurface());
+		
+		// 初始显示Battle表面
+		Children.Add(view.GetBattleSurface());
+		
+		// 始终添加HandCard表面
+		Children.Add(view.GetHandCardSurface());
 
 		// 初始化游戏
 		CardGame.instance = new CardGame();
 		CardGame.instance.viewModel = viewModel;
 		CardGame.instance.Setup();
-
-		//RogueBattleState.instance
-
 	}
 
 	public override bool ProcessKeyboard(Keyboard keyboard) {
 		bool handled = false;
-		//if (keyboard.IsKeyPressed(Keys.E)) {
-		//	GameInput.Set(GameInput.Type.END_TURN);
-		//	handled = true;
-		//} else if (keyboard.IsKeyPressed(Keys.D1)) {
-		//	GameInput.Set(GameInput.Type.CARD, new InputValue {
-		//		intValue = 0,
-		//	});
-		//	handled = true;
-		//} else if (keyboard.IsKeyPressed(Keys.D2)) {
-		//	CardGame.instance.lastInputChar = '2';
-		//	handled = true;
-		//} else if (keyboard.IsKeyPressed(Keys.D3)) {
-		//	CardGame.instance.lastInputChar = '3';
-		//	handled = true;
-		//} else if (keyboard.IsKeyPressed(Keys.D4)) {
-		//	CardGame.instance.lastInputChar = '4';
-		//	handled = true;
-		//} else if (keyboard.IsKeyPressed(Keys.D5)) {
-		//	CardGame.instance.lastInputChar = '5';
-		//	handled = true;
-		//}
-
 		return handled;
 	}
 
@@ -53,7 +37,40 @@ internal class RootScreen : ScreenObject {
 		// 更新游戏逻辑
 		CardGame.instance.Tick();
 		GameInput.Reset();
+		
+		// 检查状态切换
+		if (currentDisplayedState != viewModel.currentStateType) {
+			SwitchGameSurface(viewModel.currentStateType);
+			currentDisplayedState = viewModel.currentStateType;
+		}
+		
 		// 调用View渲染所有内容
 		view.Render(viewModel);
+	}
+	
+	private void SwitchGameSurface(GameStateType newState) {
+		// 移除当前游戏表面
+		switch (currentDisplayedState) {
+			case GameStateType.Battle:
+				Children.Remove(view.GetBattleSurface());
+				break;
+			case GameStateType.Route:
+				Children.Remove(view.GetRouteSurface());
+				break;
+		}
+		
+		// 添加新的游戏表面
+		switch (newState) {
+			case GameStateType.Battle:
+				Children.Add(view.GetBattleSurface());
+				break;
+			case GameStateType.Route:
+				Children.Add(view.GetRouteSurface());
+				break;
+			}
+		
+		// 控制HandCard表面的可见性
+		var handCardSurface = view.GetHandCardSurface();
+		handCardSurface.IsVisible = (newState == GameStateType.Battle);
 	}
 }

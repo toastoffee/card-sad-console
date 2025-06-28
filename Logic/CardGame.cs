@@ -16,9 +16,13 @@ class CardGame {
 	}
 
 	public void Setup() {
+		var playerData = RoguePlayerData.Instance;
+
 		var battleState = new RogueBattleState();
 		RogueBattleState.instance = battleState;
+		RogueInitState initState = new RogueInitState();
 		stateEngine = new LiteStateEngine(new List<LiteState> {
+			initState,
 			battleState,
 		});
 	}
@@ -51,6 +55,8 @@ public static class GameInput {
 	public enum Type {
 		CARD = 1,
 		END_TURN = 2,
+		ROUTE_STATE_SELECT = 3,
+		SKIP_BATTLE = 4,	
 		ENUM_COUNT,
 	}
 	public struct InputCache {

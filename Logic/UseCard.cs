@@ -128,7 +128,7 @@ public partial class RogueBattleState {
 		var shieldDmg = (int)MathF.Min(param.dmg, param.deffender.shield);
 		param.deffender.shield -= shieldDmg;
 		param.deffender.hp -= param.dmg - shieldDmg;
-		Log.Push($"[{param.attacker.name}]deal [{param.dmg}] dmg to [{param.deffender.name}]，remain hp {param.deffender.hp} shield {param.deffender.RemainShieldStr()}");
+		Log.Push($"[{param.attacker.name}]deal [{param.dmg}] dmg to [{param.deffender.name}]，remain hp {param.deffender.hp} shield {param.deffender.shield}");
 
 		if (param.deffender == playerCharObj) {
 			Trigger_OnAfterPlayerBeAttack(param);
@@ -136,7 +136,7 @@ public partial class RogueBattleState {
 	}
 	private void GainShiled(CharObject cha, int shield) {
 		cha.shield += shield;
-		Log.Push($"[{cha.name}] gain [{shield}] shield，current: {cha.RemainShieldStr()}");
+		Log.Push($"[{cha.name}] gain [{shield}] shield，current: {cha.shield}");
 	}
 
 	private void Trigger_OnBeforePlayerBeAttack(AttackParam param) {

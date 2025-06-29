@@ -10,8 +10,24 @@ public class RogueInitState : RogueRouteState {
 		return ret;
 	}
 
+	public override void OnEnter() {
+		base.OnEnter();
+		
+		// 使用新的装备系统分配初始装备
+		RoguePlayerData.Instance.EquipGearToSlot(GearSlot.MAIN_WEAPON, new GearObject(nameof(GearDefine.Wood_Sword)));
+		RoguePlayerData.Instance.EquipGearToSlot(GearSlot.ARMOR, new GearObject(nameof(GearDefine.Wood_Armor)));
+		RoguePlayerData.Instance.EquipGearToSlot(GearSlot.SHOE, new GearObject(nameof(GearDefine.Wood_Shoe)));
+		RoguePlayerData.Instance.EquipGearToSlot(GearSlot.HELMET, new GearObject(nameof(GearDefine.Wood_Helmet)));
+	}
+
 	protected override List<RotueOption> GetRouteOptions() {
 		var ret = new List<RotueOption> {
+			new RotueOption {
+				desc = "Start a new game",
+				onSelect = () => {
+					stateEngine.ReplaceTop<RogueBattleState>();
+				}
+			},
 			new RotueOption {
 				desc = "Start a new game",
 				onSelect = () => {

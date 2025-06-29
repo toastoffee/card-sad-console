@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 public partial class RogueBattleState {
 	// 执行所有敌人的行动
 	public void ExecuteAllEnemyActions() {
-		foreach (var enemy in enemys) {
-			enemy.enemyAction.ExecuteAction();
-		}
+		// 这个方法已经被移动到 BattleContext 中，这里保留是为了向后兼容
+		battleContext?.ExecuteAllEnemyActions();
 	}
 
 	public abstract class EnemyAction {
@@ -25,19 +24,17 @@ public partial class RogueBattleState {
 			return $"will cause [{dmg}] damage to you";
 		}
 
-
 		public virtual void ExecuteAction() {
 
 		}
 
 		public void ExecuteAttackAction(int dmg) {
-
-			instance.DoAttack(new AttackParam {
+			instance.battleContext.DoAttack(new BattleContext.AttackParam {
 				attacker = parent,
-				deffender = instance.playerCharObj,
+				deffender = instance.battleContext.playerCharObj,
 				dmg = dmg
 			});
-        }
+		}
 	}
 	public class TreemanAction : EnemyAction {
 		public int idx;

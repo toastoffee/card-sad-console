@@ -72,12 +72,12 @@ public static class EnumTrans {
 [Flags]
 public enum GearSlot {
 	NONE = 0,
-	MAIN_WEAPON = 1 >> 0,
-	SIDE_WEAPON = 1 >> 1,
-	ARMOR = 1 >> 2,
-	HELMET = 1 >> 3,
-	SHOE = 1 >> 4,
-	MAGIC = 1 >> 5,
+	MAIN_WEAPON = 1 << 0,
+	SIDE_WEAPON = 1 << 1,
+	ARMOR = 1 << 2,
+	HELMET = 1 << 3,
+	SHOE = 1 << 4,
+	MAGIC = 1 << 5,
 }
 
 public class GearModel {

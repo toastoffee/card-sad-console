@@ -23,6 +23,11 @@ internal class RouteView {
 	}
 
 	public void Render(ViewModel viewModel) {
+			// 先绘制路线区域的边框
+		_surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.White, Color.Black)));
+
 		// 渲染路线描述
 		RenderRouteDescription(viewModel);
 

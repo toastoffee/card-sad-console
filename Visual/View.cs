@@ -101,17 +101,61 @@ internal class View {
 		}
 
 		int currentY = 4;
-		int interval = 2;
-		_infoSurface.Print(1, currentY++, "Player Stats:", Color.Cyan);
+		
+		// 渲染玩家属性区域（添加方框）
+		int playerStatsHeight = 12; // 4个属性 * 2行间距 + 2行边框 + 1行标题 + 1行间距
+		int playerStatsWidth = _infoSurface.Width - 2;
 
-		currentY += 1;
-		_infoSurface.Print(1, currentY, $"HP: {viewModel.playerProp.hp} / {viewModel.playerProp.maxHp}", Color.White);
-		currentY += interval;
-		_infoSurface.Print(1, currentY, $"Attack: {viewModel.playerProp.atk}", Color.White);
-		currentY += interval;
-		_infoSurface.Print(1, currentY, $"Defense: {viewModel.playerProp.def}", Color.White);
-		currentY += interval;
-		_infoSurface.Print(1, currentY, $"Speed: {viewModel.playerProp.speed}", Color.White);
+		// 绘制玩家属性区域边框
+		_infoSurface.DrawBox(new Rectangle(1, currentY, playerStatsWidth, playerStatsHeight),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.Gray, Color.Black)));
+
+		// 标题
+		_infoSurface.Print(2, currentY + 1, "Player Stats:", Color.Cyan);
+
+		// 渲染玩家属性
+		int statsY = currentY + 3;
+		int interval = 2;
+		_infoSurface.Print(2, statsY, $"HP: {viewModel.playerProp.hp} / {viewModel.playerProp.maxHp}", Color.White);
+		statsY += interval;
+		_infoSurface.Print(2, statsY, $"Attack: {viewModel.playerProp.atk}", Color.White);
+		statsY += interval;
+		_infoSurface.Print(2, statsY, $"Defense: {viewModel.playerProp.def}", Color.White);
+		statsY += interval;
+		_infoSurface.Print(2, statsY, $"Speed: {viewModel.playerProp.speed}", Color.White);
+
+		// 更新当前Y位置，为装备区域留出空间
+		currentY += playerStatsHeight + 2;
+
+		// 渲染装备信息
+		RenderEquipmentArea(viewModel, currentY);
+	}
+
+	private void RenderEquipmentArea(ViewModel viewModel, int startY) {
+		int equipmentAreaHeight = 25; // 6个槽位 + 2行边框 + 1行标题 + 1行间距
+		int equipmentAreaWidth = _infoSurface.Width - 2;
+
+		// 绘制装备区域边框
+		_infoSurface.DrawBox(new Rectangle(1, startY, equipmentAreaWidth, equipmentAreaHeight),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.Gray, Color.Black)));
+
+		// 标题
+		_infoSurface.Print(2, startY + 1, "Equipment:", Color.Cyan);
+
+		// 渲染每个装备槽位
+		int slotY = startY + 3;
+		int occupy = 3;
+		foreach (var slot in viewModel.equipmentSlots) {
+			_infoSurface.Print(2, slotY, $"{slot.slotName}:", Color.Yellow);
+			
+			// 装备名称的颜色：有装备时为白色，None时为灰色
+			Color equipmentColor = slot.equipmentName == "None" ? Color.Gray : Color.White;
+			_infoSurface.Print(4, slotY + 1, slot.equipmentName, equipmentColor);
+			
+			slotY += occupy; // 每个槽位占1行
+		}
 	}
 
 	private void RenderLogArea(ViewModel viewModel) {
@@ -134,7 +178,7 @@ internal class View {
 		int maxGameLogs = gameLogHeight;
 		int gameStartIdx = Math.Max(0, viewModel.gameLogs.Count - maxGameLogs);
 
-		for (int i = 0; i < Math.Min(maxGameLogs, viewModel.gameLogs.Count); i++) {
+		for (int i = 0; Math.Min(maxGameLogs, viewModel.gameLogs.Count) > i; i++) {
 			int logIndex = gameStartIdx + i;
 			if (logIndex < viewModel.gameLogs.Count) {
 				_logSurface.Print(1, i + 3, viewModel.gameLogs[logIndex], Color.White);
@@ -152,7 +196,7 @@ internal class View {
 		int maxSystemLogs = systemLogHeight;
 		int systemStartIdx = Math.Max(0, viewModel.systemLogs.Count - maxSystemLogs);
 
-		for (int i = 0; i < Math.Min(maxSystemLogs, viewModel.systemLogs.Count); i++) {
+		for (int i = 0; Math.Min(maxSystemLogs, viewModel.systemLogs.Count) > i; i++) {
 			int logIndex = systemStartIdx + i;
 			if (logIndex < viewModel.systemLogs.Count) {
 				_logSurface.Print(1, systemLogY + 2 + i, viewModel.systemLogs[logIndex], Color.Gray);

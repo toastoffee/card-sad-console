@@ -44,14 +44,16 @@ public abstract class RogueRouteState : GameState {
 
 		_viewModel.currentStateType = GameStateType.Route;
 		_viewModel.routeDescription = GetRouteDesc();
-		_viewModel.playerProp = RoguePlayerData.Instance.totalProp; // 同步玩家总属性
 
 		_viewModel.routeOptions.Clear();
-		for (int i = 0; i < _currentOptions.Count; i++) {
-			_viewModel.routeOptions.Add(new RouteOptionViewModel {
-				description = _currentOptions[i].desc,
-				index = i
-			});
+		if (_currentOptions != null) {
+
+			for (int i = 0; i < _currentOptions.Count; i++) {
+				_viewModel.routeOptions.Add(new RouteOptionViewModel {
+					description = _currentOptions[i].desc,
+					index = i
+				});
+			}
 		}
 	}
 }

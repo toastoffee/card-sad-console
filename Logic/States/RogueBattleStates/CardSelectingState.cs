@@ -6,30 +6,37 @@ using System.Threading.Tasks;
 
 public class CardSelectingState : LiteState {
     private RogueBattleState battleState;
+    private BattleContext battleContext;
 
     public CardSelectingState(RogueBattleState battleState) {
         this.battleState = battleState;
     }
+    
+    public void SetBattleContext(BattleContext context) {
+        this.battleContext = context;
+    }
 
     public void OnTick() {
+        if (battleContext == null) return;
+        
         if (GameInput.Read(GameInput.Type.CARD, out var value)) {
             int idx = value.intValue;
-            if (idx >= 0 && idx < battleState.tokens.Count) {
-                var card = battleState.tokens[idx];
+            if (idx >= 0 && idx < battleContext.tokens.Count) {
+                var card = battleContext.tokens[idx];
                 var input = new RogueBattleState.CardSelectInput {
                     isBreak = false,
                     card = card,
                 };
-                battleState.selectCardHandler?.Invoke(input);
+                battleContext.selectCardHandler?.Invoke(input);
             }
         }
 
         if (GameInput.Read(GameInput.Type.END_TURN)) {
             var input = new RogueBattleState.CardSelectInput {
                 isBreak = true,
-                card = null!,
+                card = null,
             };
-            battleState.selectCardHandler?.Invoke(input);
+            battleContext.selectCardHandler?.Invoke(input);
             GotoIdle();
         }
     }

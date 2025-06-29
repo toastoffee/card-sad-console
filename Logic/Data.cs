@@ -70,6 +70,38 @@ public struct PlayerProp {
 	}
 }
 
+public class EquipmentSlot {
+	public GearSlot slotType { get; private set; }
+	public string displayName { get; private set; }
+	public GearObject equippedGear { get; private set; } // 可以为 null
+
+	public EquipmentSlot(GearSlot slotType, string displayName) {
+		this.slotType = slotType;
+		this.displayName = displayName;
+		this.equippedGear = null;
+	}
+
+	public bool CanEquip(GearObject gear) {
+		return (gear.gearModel.availSlotFlag & slotType) != 0;
+	}
+
+	public bool EquipGear(GearObject gear) {
+		if (!CanEquip(gear)) {
+			return false;
+		}
+		equippedGear = gear;
+		return true;
+	}
+
+	public GearObject UnequipGear() {
+		var previousGear = equippedGear;
+		equippedGear = null;
+		return previousGear;
+	}
+
+	public bool HasEquipment => equippedGear != null;
+}
+
 public class RoguePlayerData {
 	private static RoguePlayerData _instance;
 	public static RoguePlayerData Instance {
@@ -89,9 +121,8 @@ public class RoguePlayerData {
 		}
 	}
 
-	public List<GearObject> gears = new List<GearObject>();
+	public List<EquipmentSlot> equipmentSlots = new List<EquipmentSlot>();
 
-	// 私有构造函数，防止外部直接创建实例
 	private RoguePlayerData() {
 		// 初始化基础属性
 		baseProp = new PlayerProp {
@@ -101,34 +132,77 @@ public class RoguePlayerData {
 			atk = 0,
 			speed = 0
 		};
+
+		// 初始化所有装备槽位
+		InitializeEquipmentSlots();
 		UpdateGearProp();
+	}
+
+	private void InitializeEquipmentSlots() {
+		equipmentSlots.Clear();
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.MAIN_WEAPON, "Main Weapon"));
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.SIDE_WEAPON, "Side Weapon"));
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.ARMOR, "Armor"));
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.HELMET, "Helmet"));
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.SHOE, "Shoe"));
+		equipmentSlots.Add(new EquipmentSlot(GearSlot.MAGIC, "Magic"));
 	}
 
 	// 更新装备属性
 	public void UpdateGearProp() {
 		gearProp = new PlayerProp(); // 重置装备属性
 
-		foreach (var gear in gears) {
-			gearProp = gearProp.Add(gear.prop);
+		foreach (var slot in equipmentSlots) {
+			if (slot.HasEquipment) {
+				gearProp = gearProp.Add(slot.equippedGear.prop);
+			}
 		}
 	}
 
-	// 添加装备
-	public void AddGear(GearObject gear) {
-		gears.Add(gear);
-		UpdateGearProp();
-	}
+	// 装备管理方法
+	public bool EquipGear(GearObject gear) {
+		// 找到第一个兼容的空槽位
+		var compatibleSlot = equipmentSlots.FirstOrDefault(slot => 
+			!slot.HasEquipment && slot.CanEquip(gear));
 
-	// 移除装备
-	public void RemoveGear(GearObject gear) {
-		if (gears.Remove(gear)) {
+		if (compatibleSlot != null) {
+			compatibleSlot.EquipGear(gear);
 			UpdateGearProp();
+			return true;
 		}
+		return false;
+	}
+
+	public bool EquipGearToSlot(GearSlot slotType, GearObject gear) {
+		var slot = equipmentSlots.FirstOrDefault(s => s.slotType == slotType);
+		if (slot != null && slot.CanEquip(gear)) {
+			slot.UnequipGear(); // 先卸下旧装备
+			slot.EquipGear(gear);
+			UpdateGearProp();
+			return true;
+		}
+		return false;
+	}
+
+	public GearObject UnequipGear(GearSlot slotType) {
+		var slot = equipmentSlots.FirstOrDefault(s => s.slotType == slotType);
+		if (slot != null && slot.HasEquipment) {
+			var gear = slot.UnequipGear();
+			UpdateGearProp();
+			return gear;
+		}
+		return null;
+	}
+
+	public EquipmentSlot GetSlot(GearSlot slotType) {
+		return equipmentSlots.FirstOrDefault(s => s.slotType == slotType);
 	}
 
 	// 清空所有装备
-	public void ClearGears() {
-		gears.Clear();
+	public void ClearAllGears() {
+		foreach (var slot in equipmentSlots) {
+			slot.UnequipGear();
+		}
 		UpdateGearProp();
 	}
 

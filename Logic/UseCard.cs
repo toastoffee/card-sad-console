@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public partial class RogueBattleState {
+public partial class BattleContext {
+	
+	#region 使用卡牌逻辑
+
 	public void PreUseCard(int idx) {
 		var card = tokens[idx];
 		if (card.name == nameof(CardDefine.Swap)) {
@@ -20,7 +23,6 @@ public partial class RogueBattleState {
 			Log.Push("not enough energy.");
 			return;
 		}
-
 
 		if (card != null) {
 			Log.Push($"use hand：[{card.cardModel.modelId}]");
@@ -48,7 +50,6 @@ public partial class RogueBattleState {
 		yard.Add(card);
 	}
 
-
 	private void DoDamageToEnemy(int idx, int dmg) {
 		var enemy = enemys[idx];
 		DoAttack(new AttackParam {
@@ -59,21 +60,17 @@ public partial class RogueBattleState {
 	}
 
 	private void ApplyShieldToPlayer(int shield) {
-		GainShiled(playerCharObj, shield);
-	}
-
-	private class SWAP_Context {
-		public CardType type;
+		GainShield(playerCharObj, shield);
 	}
 
 	private void PreuseCard_SWAP(CardObjcet card) {
-		GotoCardSelect();
-		Log.Push("chose a card to swap (Weapon or Armod.)");
+		RogueBattleState.instance.GotoCardSelect();
+		Log.Push("chose a card to swap (Weapon or Armor.)");
 		var ctx = new SWAP_Context();
 		selectCardHandler = (input) => {
 			var selectCard = input.card;
 			if (input.isBreak) {
-				GotoIdle();
+				RogueBattleState.instance.GotoIdle();
 				return;
 			}
 			if (selectCard.type != CardType.WEAPON && selectCard.type != CardType.ARMOR) {
@@ -84,7 +81,7 @@ public partial class RogueBattleState {
 			Log.Push($"chosen：[{selectCard.cardModel.modelId}]，discard all [{EnumTrans.Get(selectCard.type)}]");
 			selectCardCtx = ctx;
 			UseCard(card);
-			GotoIdle();
+			RogueBattleState.instance.GotoIdle();
 		};
 		selectCardCtx = ctx;
 	}
@@ -109,41 +106,10 @@ public partial class RogueBattleState {
 			if (draw != null) {
 				PickFromDeck(draw);
 			}
-			// 清理上下文
-			selectCardCtx = null;
 		}
+		// 清理上下文
+		selectCardCtx = null;
 	}
 
-	public struct AttackParam {
-		public CharObject attacker;
-		public CharObject deffender;
-		public int dmg;
-	}
-
-	private void DoAttack(AttackParam param) {
-		if (param.deffender == playerCharObj) {
-			Trigger_OnBeforePlayerBeAttack(param);
-		}
-
-		var shieldDmg = (int)MathF.Min(param.dmg, param.deffender.shield);
-		param.deffender.shield -= shieldDmg;
-		param.deffender.hp -= param.dmg - shieldDmg;
-		Log.Push($"[{param.attacker.name}]deal [{param.dmg}] dmg to [{param.deffender.name}]，remain hp {param.deffender.hp} shield {param.deffender.shield}");
-
-		if (param.deffender == playerCharObj) {
-			Trigger_OnAfterPlayerBeAttack(param);
-		}
-	}
-	private void GainShiled(CharObject cha, int shield) {
-		cha.shield += shield;
-		Log.Push($"[{cha.name}] gain [{shield}] shield，current: {cha.shield}");
-	}
-
-	private void Trigger_OnBeforePlayerBeAttack(AttackParam param) {
-
-	}
-
-	private void Trigger_OnAfterPlayerBeAttack(AttackParam param) {
-
-	}
+	#endregion
 }

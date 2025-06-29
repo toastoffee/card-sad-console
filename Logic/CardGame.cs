@@ -31,6 +31,9 @@ class CardGame {
 		var state = stateEngine.frontState as GameState;
 		state.OnTick();
 
+		 // 同步信息面板数据
+		SyncInfoPanelToViewModel();
+		
 		// 添加日志同步
 		SyncLogsToViewModel();
 	}
@@ -44,6 +47,25 @@ class CardGame {
 
 		viewModel.gameLogs.AddRange(Log.gameLogs);
 		viewModel.systemLogs.AddRange(Log.systemLogs);
+	}
+
+	public void SyncInfoPanelToViewModel() {
+		if (viewModel == null) return;
+
+		var playerData = RoguePlayerData.Instance;
+
+		// 同步玩家属性
+		viewModel.playerProp = playerData.totalProp;
+
+		// 同步装备信息
+		viewModel.equipmentSlots.Clear();
+		foreach (var slot in playerData.equipmentSlots) {
+			viewModel.equipmentSlots.Add(new EquipmentSlotViewModel {
+				slotType = slot.slotType,
+				slotName = slot.displayName,
+				equipmentName = slot.HasEquipment ? slot.equippedGear.name : "None"
+			});
+		}
 	}
 }
 

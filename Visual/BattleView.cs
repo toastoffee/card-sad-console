@@ -18,6 +18,8 @@ internal class BattleView {
 	private PanelText playerHealthText;
 	private PanelText playerEnergyText;
 	private PanelText playerShieldText;
+	private PanelText deckCountText;
+	private PanelText discardCountText;
 	private List<EnemyView> enemyViews = new List<EnemyView>();
 	private List<CardView> cardViews = new List<CardView>();
 	private ButtonBox endTurnButton;
@@ -43,7 +45,7 @@ internal class BattleView {
 		int buttonWidth = 12;
 		int buttonHeight = 3;
 		int buttonX = _surface.Width - buttonWidth - 2;
-		int buttonY = _surface.Height - buttonHeight - 2;
+		int buttonY = _surface.Height - buttonHeight - 1;
 
 		endTurnButton = new ButtonBox(buttonWidth, buttonHeight) {
 			Position = new Point(buttonX, buttonY),
@@ -79,6 +81,11 @@ internal class BattleView {
 	}
 
 	public void Render(ViewModel viewModel) {
+		 // 先绘制主游戏区域的边框
+		_surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.White, Color.Black)));
+
 		// 渲染玩家状态
 		RenderPlayerStatus(viewModel);
 
@@ -95,22 +102,65 @@ internal class BattleView {
 	}
 
 	private void RenderPlayerStatus(ViewModel viewModel) {
-		turnText = new PanelText(new Point(3, 1), "Turn", 6, 3, Color.Wheat, _surface);
+		// 计算左下角位置
+		int bottomY = _surface.Height - 4; // 距离底部4个单位
+		int upperY = bottomY - 4; // 上方一行，间距1（3高度+1间距）
+		int startX = 2; // 左边距2个单位
+		int gap = 1; // 框与框之间的间距
+
+		// 各个状态框的宽度
+		int turnWidth = 6;
+		int energyWidth = 10;
+		int hpWidth = 10;
+		int shieldWidth = 10;
+		int deckWidth = 8;
+		int discardWidth = 8;
+
+		// 渲染上方行：卡牌堆信息
+		int upperCurrentX = startX;
+		
+		// 抽牌堆
+		deckCountText = new PanelText(new Point(upperCurrentX, upperY), "Deck", deckWidth, 3, Color.Green, _surface);
+		deckCountText.alignType = PanelText.AlignType.Center;
+		deckCountText.contentColor = viewModel.deckCount > 0 ? Color.White : Color.Gray;
+		deckCountText.content = viewModel.deckCount.ToString();
+
+		// 弃牌堆
+		upperCurrentX += deckWidth + gap;
+		discardCountText = new PanelText(new Point(upperCurrentX, upperY), "Discard", discardWidth, 3, Color.Purple, _surface);
+		discardCountText.alignType = PanelText.AlignType.Center;
+		discardCountText.contentColor = viewModel.discardCount > 0 ? Color.White : Color.Gray;
+		discardCountText.content = viewModel.discardCount.ToString();
+
+		// 渲染下方行：现有状态信息
+		int currentX = startX;
+		
+		// 回合数
+		turnText = new PanelText(new Point(currentX, bottomY), "Turn", turnWidth, 3, Color.Wheat, _surface);
 		turnText.alignType = PanelText.AlignType.Center;
 		turnText.content = viewModel.turn.ToString();
 
-		playerEnergyText = new PanelText(new Point(3, 7), "Energy", 10, 3, Color.Orange, _surface);
+		// 能量
+		currentX += turnWidth + gap;
+		playerEnergyText = new PanelText(new Point(currentX, bottomY), "Energy", energyWidth, 3, Color.Orange, _surface);
 		playerEnergyText.alignType = PanelText.AlignType.Center;
 		playerEnergyText.content = $"{viewModel.eng}/{viewModel.maxEng}";
 
-		playerHealthText = new PanelText(new Point(3, 10), "HP", 10, 3, Color.Red, _surface);
+		// 血量
+		currentX += energyWidth + gap;
+		playerHealthText = new PanelText(new Point(currentX, bottomY), "HP", hpWidth, 3, Color.Red, _surface);
 		playerHealthText.alignType = PanelText.AlignType.Center;
 		playerHealthText.content = $"{viewModel.playerHp}/{viewModel.maxPlayerHp}";
 
+		// 护盾（只有大于0时才显示）
 		if (viewModel.playerShield > 0) {
+			currentX += hpWidth + gap;
 			if (playerShieldText == null) {
-				playerShieldText = new PanelText(new Point(3, 13), "Shield", 10, 3, Color.LightBlue, _surface);
+				playerShieldText = new PanelText(new Point(currentX, bottomY), "Shield", shieldWidth, 3, Color.LightBlue, _surface);
 				playerShieldText.alignType = PanelText.AlignType.Center;
+			} else {
+				// 更新护盾框的位置（因为它可能会动态显示/隐藏）
+				playerShieldText.SetPosition(new Point(currentX, bottomY));
 			}
 			playerShieldText.content = viewModel.playerShield.ToString();
 		}
@@ -134,6 +184,18 @@ internal class BattleView {
 	}
 
 	private void RenderCards(ViewModel viewModel) {
+		// 先绘制手牌区域的边框
+		int totalWidth = _handCardSurface.Width;
+		int totalHeight = _handCardSurface.Height;
+
+		// 绘制手牌区域边框
+		_handCardSurface.DrawBox(new Rectangle(0, 0, totalWidth, totalHeight),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.White, Color.Black)));
+
+		// 添加"Hand Cards"标题
+		_handCardSurface.Print(2, 0, "Hand Cards", Color.Yellow);
+
 		// 计算居中的起始位置
 		int cardCount = viewModel.handCards.Count;
 		if (cardCount == 0) return;
@@ -141,7 +203,7 @@ internal class BattleView {
 		int cardWidth = 17; // CardView.TotalWidth
 		int cardSpacing = 2;
 		int totalCardsWidth = cardCount * cardWidth + (cardCount - 1) * cardSpacing;
-		int startX = (_handCardSurface.Width - totalCardsWidth) / 2;
+		int startX = (totalWidth - totalCardsWidth) / 2;
 
 		// 确保有足够的CardView
 		while (cardViews.Count < cardCount) {

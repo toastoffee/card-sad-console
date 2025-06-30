@@ -9,6 +9,8 @@ public abstract class RogueRouteState : GameState {
 	private ViewModel _viewModel;
 	private List<RotueOption> _currentOptions;
 
+
+
 	public class RotueOption {
 		public string desc;
 		public Action onSelect;

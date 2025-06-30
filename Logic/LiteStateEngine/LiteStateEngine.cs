@@ -20,7 +20,7 @@ public class LiteStateEngine {
 		}
 		var defaultState = m_registerStates[0];
 		foreach (var state in m_stateDict.Values) {
-			state.SetStataeActive(state == defaultState);
+			state.SetStateActive(state == defaultState);
 		}
 		AddTop(defaultState.GetType());
 	}
@@ -40,11 +40,11 @@ public class LiteStateEngine {
 		var prev = frontState;
 		if (frontState != null) {
 			frontState.OnExit();
-			frontState.SetStataeActive(false);
+			frontState.SetStateActive(false);
 		}
 		if (m_stateDict.TryGetValue(type, out var state)) {
 			m_stack.Push(state);
-			state.SetStataeActive(true);
+			state.SetStateActive(true);
 			state.OnEnter();
 		} else {
 			Log.LogError($"State of type {type} not found in registered states.");
@@ -61,11 +61,11 @@ public class LiteStateEngine {
 			return;
 		}
 		top.OnExit();
-		top.SetStataeActive(false);
+		top.SetStateActive(false);
 		m_stack.Pop();
 		if (m_stateDict.TryGetValue(type, out var state)) {
 			m_stack.Push(state);
-			state.SetStataeActive(true);
+			state.SetStateActive(true);
 			state.OnEnter();
 		} else {
 			Log.LogError($"State of type {type} not found in registered states.");
@@ -80,10 +80,10 @@ public class LiteStateEngine {
 		}
 		var top = m_stack.Pop();
 		top.OnExit();
-		top.SetStataeActive(false);
+		top.SetStateActive(false);
 		var nextState = m_stack.Peek();
 		if (nextState != null) {
-			nextState.SetStataeActive(true);
+			nextState.SetStateActive(true);
 			nextState.OnResume();
 		}
 	}

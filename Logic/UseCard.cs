@@ -51,7 +51,7 @@ public partial class BattleContext {
 	}
 
 	private void DoDamageToEnemy(int idx, int dmg) {
-		var enemy = enemys[idx];
+		var enemy = enemies[idx];
 		DoAttack(new AttackParam {
 			attacker = playerCharObj,
 			deffender = enemy,

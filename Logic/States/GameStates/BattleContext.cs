@@ -11,7 +11,7 @@ public partial class BattleContext {
 		maxHp = 70,
 	};
 
-	public List<CharObject> enemys = new();
+	public List<CharObject> enemies = new();
 	public int roundIdx = 0;
 	public int mana = 0;
 
@@ -51,7 +51,7 @@ public partial class BattleContext {
 			maxHp = 70,
 		};
 
-		enemys.Clear();
+		enemies.Clear();
 		roundIdx = 0;
 		mana = 0;
 
@@ -72,6 +72,16 @@ public partial class BattleContext {
 		OnRoundStart();
 	}
 
+	public bool IsAllEnemiesDead()
+	{
+		bool ret = true;
+		foreach(var enemy in enemies)
+		{
+			ret &= enemy.hp <= 0;
+		}
+		return ret;
+	}
+
 	private void SetupEnemys() {
 		var enemy = new CharObject {
 			name = "Treeman",
@@ -79,7 +89,7 @@ public partial class BattleContext {
 			maxHp = 27,
 		};
 		enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
-		enemys.Add(enemy);
+		enemies.Add(enemy);
 	}
 
 	private void InitializeDeckFromEquipment() {
@@ -195,7 +205,7 @@ public partial class BattleContext {
 	}
 
 	public void ExecuteAllEnemyActions() {
-		foreach (var enemy in enemys) {
+		foreach (var enemy in enemies) {
 			enemy.enemyAction.ExecuteAction();
 		}
 	}
@@ -242,7 +252,7 @@ public partial class BattleContext {
 		_viewModel.discardCount = yard.Count;
 
 		_viewModel.enemies.Clear();
-		foreach (var enemy in enemys) {
+		foreach (var enemy in enemies) {
 			_viewModel.enemies.Add(new EnemyViewModel {
 				name = enemy.name,
 				hp = enemy.hp,

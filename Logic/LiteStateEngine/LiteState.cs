@@ -9,7 +9,7 @@ public abstract class LiteState {
 		stateEngine = liteStateEngine;
 	}
 	//used to dispose things
-	public virtual void SetStataeActive(bool isActive) { }
+	public virtual void SetStateActive(bool isActive) { }
 	public virtual void OnEnter() { }
 	public virtual void OnExit() { }
 	public virtual void OnResume() { }

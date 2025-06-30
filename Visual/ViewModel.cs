@@ -15,6 +15,7 @@ public class RouteOptionViewModel {
 	public int index;
 }
 
+
 // 添加装备槽位信息的类
 public class EquipmentSlotViewModel {
 	public GearSlot slotType;
@@ -38,6 +39,7 @@ public class ViewModel {
 
 	public List<EnemyViewModel> enemies = new List<EnemyViewModel>(); // 添加敌人视图模型列表
 	public List<CardViewModel> handCards = new List<CardViewModel>(); // 玩家手牌列表
+	
 
 	// 添加装备信息
 	public List<EquipmentSlotViewModel> equipmentSlots = new List<EquipmentSlotViewModel>();

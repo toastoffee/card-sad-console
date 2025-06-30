@@ -63,9 +63,16 @@ public partial class RogueBattleState : GameState {
 
 		// 同步到ViewModel
 		battleContext?.SyncToViewModel();
-	}
 
-	public void GotoIdle() {
+        // 判断是否所有敌人均死亡
+		if(battleContext.IsAllEnemiesDead())
+		{
+            Log.PushSys("[Battle] Complete Level.");
+			CardGame.instance.stateEngine.ReplaceTop<RogueInitState>();
+        }
+    }
+
+    public void GotoIdle() {
 		subStateEngine.ReplaceTop<IdleState>();
 	}
 

@@ -47,9 +47,8 @@ public partial class BattleContext {
 		// 重置所有状态
 		playerCharObj = new CharObject {
 			name = "Player",
-			hp = 70,
-			maxHp = 70,
 		};
+		playerCharObj.LoadFromPlayerProp(RoguePlayerData.Instance.totalProp);
 
 		enemies.Clear();
 		roundIdx = 0;
@@ -72,11 +71,9 @@ public partial class BattleContext {
 		OnRoundStart();
 	}
 
-	public bool IsAllEnemiesDead()
-	{
+	public bool IsAllEnemiesDead() {
 		bool ret = true;
-		foreach(var enemy in enemies)
-		{
+		foreach (var enemy in enemies) {
 			ret &= enemy.hp <= 0;
 		}
 		return ret;
@@ -122,6 +119,18 @@ public partial class BattleContext {
 			var card = new CardObjcet();
 			card.LoadFromModel(AutoModelTable<CardModel>.Read(id));
 			deck.Add(card);
+		}
+	}
+
+	public void AddJourney(int cnt) {
+		while (cnt > 0) {
+			var add = (int)MathF.Min(playerCharObj.maxJourney - playerCharObj.journey, cnt);
+			playerCharObj.journey += add;
+			cnt -= add;
+			if (playerCharObj.journey == playerCharObj.maxJourney) {
+				playerCharObj.journey = 0;
+				DrawFromDeck(1);
+			}
 		}
 	}
 
@@ -229,7 +238,7 @@ public partial class BattleContext {
 	private void OnRoundStart() {
 		playerCharObj.shield = 0;
 		mana = 3;
-		DrawFromDeck(4);
+		AddJourney(playerCharObj.speed);
 	}
 
 	#endregion
@@ -269,6 +278,12 @@ public partial class BattleContext {
 				description = card.cardModel.desc
 			});
 		}
+
+		_viewModel.journey = playerCharObj.journey;
+		_viewModel.maxJourney = playerCharObj.maxJourney;
+
+		//覆写信息面板，用战斗内的当前属性显示
+		_viewModel.playerProp = playerCharObj.playerProp;
 	}
 
 	#endregion

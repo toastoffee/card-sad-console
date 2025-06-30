@@ -17,6 +17,14 @@ class CardGame {
 
 	public void Setup() {
 		var playerData = RoguePlayerData.Instance;
+		playerData.baseProp = new PlayerProp {
+			hp = 70,
+			maxHp = 70,
+			def = 2,
+			atk = 2,
+			speed = 33,
+			maxJourney = 10,
+		};
 
 		var battleState = new RogueBattleState();
 		RogueBattleState.instance = battleState;
@@ -29,13 +37,15 @@ class CardGame {
 
 	public void Tick() {
 		var state = stateEngine.frontState as GameState;
-		state.OnTick();
 
-		 // 同步信息面板数据
+		// 同步信息面板数据
 		SyncInfoPanelToViewModel();
-		
+
 		// 添加日志同步
 		SyncLogsToViewModel();
+
+		//tick在最后，子状态可以覆盖ViewModel中的数据
+		state.OnTick();
 	}
 
 	public void SyncLogsToViewModel() {
@@ -45,7 +55,13 @@ class CardGame {
 		viewModel.gameLogs.Clear();
 		viewModel.systemLogs.Clear();
 
-		viewModel.gameLogs.AddRange(Log.gameLogs);
+		for (int i = 0; i < Log.gameLogs.Count; i++) {
+			var log = Log.gameLogs[i];
+			viewModel.gameLogs.Add(log);
+			if (i < Log.gameLogs.Count - 1) {
+				viewModel.gameLogs.Add("");
+			}
+		}
 		viewModel.systemLogs.AddRange(Log.systemLogs);
 	}
 
@@ -56,6 +72,7 @@ class CardGame {
 
 		// 同步玩家属性
 		viewModel.playerProp = playerData.totalProp;
+		viewModel.playerMoney = playerData.money;
 
 		// 同步装备信息
 		viewModel.equipmentSlots.Clear();
@@ -78,7 +95,7 @@ public static class GameInput {
 		CARD = 1,
 		END_TURN = 2,
 		ROUTE_STATE_SELECT = 3,
-		SKIP_BATTLE = 4,	
+		SKIP_BATTLE = 4,
 		ENUM_COUNT,
 	}
 	public struct InputCache {

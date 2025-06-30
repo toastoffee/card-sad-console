@@ -24,6 +24,7 @@ internal class BattleView {
 	private List<CardView> cardViews = new List<CardView>();
 	private ButtonBox endTurnButton;
 	private ButtonBox skipBattleButton;
+	private ProgressBar speedProgressBar;
 
 	public BattleView(ScreenSurface surface, ScreenSurface handCardSurface) {
 		_surface = surface;
@@ -76,12 +77,17 @@ internal class BattleView {
 			});
 		};
 		skipBattleButton.IsVisible = true;
-
 		_controls.Add(skipBattleButton);
+
+
+		speedProgressBar = new ProgressBar(20, 1, HorizontalAlignment.Left);
+		speedProgressBar.BarColor = Color.AnsiYellow;
+		speedProgressBar.Position = new Point((_surface.Width - speedProgressBar.Width) / 2, _surface.Height - 3);
+		_controls.Add(speedProgressBar);
 	}
 
 	public void Render(ViewModel viewModel) {
-		 // 先绘制主游戏区域的边框
+		// 先绘制主游戏区域的边框
 		_surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
 			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
 				new ColoredGlyph(Color.White, Color.Black)));
@@ -118,7 +124,7 @@ internal class BattleView {
 
 		// 渲染上方行：卡牌堆信息
 		int upperCurrentX = startX;
-		
+
 		// 抽牌堆
 		deckCountText = new PanelText(new Point(upperCurrentX, upperY), "Deck", deckWidth, 3, Color.Green, _surface);
 		deckCountText.alignType = PanelText.AlignType.Center;
@@ -134,7 +140,7 @@ internal class BattleView {
 
 		// 渲染下方行：现有状态信息
 		int currentX = startX;
-		
+
 		// 回合数
 		turnText = new PanelText(new Point(currentX, bottomY), "Turn", turnWidth, 3, Color.Wheat, _surface);
 		turnText.alignType = PanelText.AlignType.Center;
@@ -164,6 +170,17 @@ internal class BattleView {
 			}
 			playerShieldText.content = viewModel.playerShield.ToString();
 		}
+
+		_surface.DrawBox(new Rectangle(speedProgressBar.Position.X - 1, speedProgressBar.Position.Y - 1, speedProgressBar.Width + 2, speedProgressBar.Height + 2),
+			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+				new ColoredGlyph(Color.AnsiYellow, Color.Black)));
+		var prog = viewModel.journey / MathF.Max(viewModel.maxJourney, 1);
+		speedProgressBar.Progress = prog;
+		speedProgressBar.DisplayText = "";
+		speedProgressBar.UpdateAndRedraw(default);
+		Log.PushSys(prog.ToString());
+
+		_surface.Print(speedProgressBar.Position.X, speedProgressBar.Position.Y - 1, $"Draw Card: {viewModel.journey}/{viewModel.maxJourney}", Color.AnsiYellow);
 	}
 
 	private void RenderEnemies(ViewModel viewModel) {

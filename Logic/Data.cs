@@ -19,7 +19,30 @@ public class CharObject {
 	public int hp;
 	public int maxHp;
 	public int shield;
+	public int def;
+	public int atk;
+	public int speed;
+	public int journey;
+	public int maxJourney;
 	public RogueBattleState.EnemyAction enemyAction;
+
+	public PlayerProp playerProp => new PlayerProp {
+		hp = hp,
+		maxHp = maxHp,
+		def = def,
+		atk = atk,
+		speed = speed,
+		maxJourney = maxJourney,
+	};
+
+	public void LoadFromPlayerProp(PlayerProp prop) {
+		hp = prop.hp;
+		maxHp = prop.maxHp;
+		def = prop.def;
+		atk = prop.atk;
+		speed = prop.speed;
+		maxJourney = prop.maxJourney;
+	}
 }
 
 public enum GameStateEnum {
@@ -57,6 +80,7 @@ public struct PlayerProp {
 	public int def;
 	public int atk;
 	public int speed;
+	public int maxJourney;
 
 	public PlayerProp Add(PlayerProp other) {
 		var ret = new PlayerProp() {
@@ -65,6 +89,7 @@ public struct PlayerProp {
 			def = this.def + other.def,
 			atk = this.atk + other.atk,
 			speed = this.speed + other.speed,
+			maxJourney = this.maxJourney + other.maxJourney
 		};
 		return ret;
 	}
@@ -122,6 +147,7 @@ public class RoguePlayerData {
 	}
 
 	public List<EquipmentSlot> equipmentSlots = new List<EquipmentSlot>();
+	public int money = 99;
 
 	private RoguePlayerData() {
 		// 初始化基础属性
@@ -162,7 +188,7 @@ public class RoguePlayerData {
 	// 装备管理方法
 	public bool EquipGear(GearObject gear) {
 		// 找到第一个兼容的空槽位
-		var compatibleSlot = equipmentSlots.FirstOrDefault(slot => 
+		var compatibleSlot = equipmentSlots.FirstOrDefault(slot =>
 			!slot.HasEquipment && slot.CanEquip(gear));
 
 		if (compatibleSlot != null) {

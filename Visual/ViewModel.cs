@@ -30,8 +30,11 @@ public class ViewModel {
 	public int playerHp;
 	public int maxPlayerHp;
 	public int playerShield; // 添加玩家护盾值
+	public int journey;
+	public int maxJourney;
 	public PlayerProp playerProp; // 添加玩家总属性
 	public GameStateType currentStateType; // 添加状态类型标识
+	public int playerMoney;
 
 	// Route状态相关数据
 	public string routeDescription = "";
@@ -39,7 +42,7 @@ public class ViewModel {
 
 	public List<EnemyViewModel> enemies = new List<EnemyViewModel>(); // 添加敌人视图模型列表
 	public List<CardViewModel> handCards = new List<CardViewModel>(); // 玩家手牌列表
-	
+
 
 	// 添加装备信息
 	public List<EquipmentSlotViewModel> equipmentSlots = new List<EquipmentSlotViewModel>();

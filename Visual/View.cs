@@ -101,7 +101,7 @@ internal class View {
 		}
 
 		int currentY = 4;
-		
+
 		// 渲染玩家属性区域（添加方框）
 		int playerStatsHeight = 12; // 4个属性 * 2行间距 + 2行边框 + 1行标题 + 1行间距
 		int playerStatsWidth = _infoSurface.Width - 2;
@@ -112,18 +112,25 @@ internal class View {
 				new ColoredGlyph(Color.Gray, Color.Black)));
 
 		// 标题
-		_infoSurface.Print(2, currentY + 1, "Player Stats:", Color.Cyan);
+		int playerStatsLeft = 2;
+		int rogueStatsLeft = 25; // Rogue stats starts at column 25
+		_infoSurface.Print(playerStatsLeft, currentY + 1, "Player Stats:", Color.Cyan);
+		_infoSurface.Print(rogueStatsLeft, currentY + 1, "Rogue Stats:", Color.Cyan);
+
+		// 渲染Rogue属性
+		_infoSurface.Print(rogueStatsLeft, currentY + 3, $"Money: {viewModel.playerMoney}", Color.Yellow);
+
 
 		// 渲染玩家属性
 		int statsY = currentY + 3;
 		int interval = 2;
-		_infoSurface.Print(2, statsY, $"HP: {viewModel.playerProp.hp} / {viewModel.playerProp.maxHp}", Color.White);
+		_infoSurface.Print(playerStatsLeft, statsY, $"HP: {viewModel.playerProp.hp} / {viewModel.playerProp.maxHp}", Color.White);
 		statsY += interval;
-		_infoSurface.Print(2, statsY, $"Attack: {viewModel.playerProp.atk}", Color.White);
+		_infoSurface.Print(playerStatsLeft, statsY, $"Attack: {viewModel.playerProp.atk}", Color.White);
 		statsY += interval;
-		_infoSurface.Print(2, statsY, $"Defense: {viewModel.playerProp.def}", Color.White);
+		_infoSurface.Print(playerStatsLeft, statsY, $"Defense: {viewModel.playerProp.def}", Color.White);
 		statsY += interval;
-		_infoSurface.Print(2, statsY, $"Speed: {viewModel.playerProp.speed}", Color.White);
+		_infoSurface.Print(playerStatsLeft, statsY, $"Speed: {viewModel.playerProp.speed}", Color.White);
 
 		// 更新当前Y位置，为装备区域留出空间
 		currentY += playerStatsHeight + 2;
@@ -149,15 +156,26 @@ internal class View {
 		int occupy = 3;
 		foreach (var slot in viewModel.equipmentSlots) {
 			_infoSurface.Print(2, slotY, $"{slot.slotName}:", Color.Yellow);
-			
+
 			// 装备名称的颜色：有装备时为白色，None时为灰色
 			Color equipmentColor = slot.equipmentName == "None" ? Color.Gray : Color.White;
 			_infoSurface.Print(4, slotY + 1, slot.equipmentName, equipmentColor);
-			
+
 			slotY += occupy; // 每个槽位占1行
 		}
 	}
 
+	private static Color[] logColors = new Color[] {
+		Color.White * 1.0f,
+		Color.White * 1.0f,
+		Color.White * 1.0f,
+		Color.White * 0.9f,
+		Color.White * 0.9f,
+		Color.White * 0.9f,
+		Color.White * 0.8f,
+		Color.White * 0.8f,
+		Color.White * 0.8f,
+	};
 	private void RenderLogArea(ViewModel viewModel) {
 		int totalHeight = _logSurface.Height;
 		int headerHeight = 1;
@@ -175,13 +193,19 @@ internal class View {
 			_logSurface.Surface[i, 2].Foreground = Color.White;
 		}
 
+		// 游戏日志：最新的显示在最上方，使用渐变颜色
 		int maxGameLogs = gameLogHeight;
-		int gameStartIdx = Math.Max(0, viewModel.gameLogs.Count - maxGameLogs);
+		int totalGameLogs = viewModel.gameLogs.Count;
 
-		for (int i = 0; Math.Min(maxGameLogs, viewModel.gameLogs.Count) > i; i++) {
-			int logIndex = gameStartIdx + i;
-			if (logIndex < viewModel.gameLogs.Count) {
-				_logSurface.Print(1, i + 3, viewModel.gameLogs[logIndex], Color.White);
+		for (int i = 0; i < Math.Min(maxGameLogs, totalGameLogs); i++) {
+			// 从最新的日志开始显示（倒序）
+			int logIndex = totalGameLogs - 1 - i;
+			if (logIndex >= 0) {
+				// 计算颜色索引，最新的使用第一个颜色，然后逐渐变暗
+				int colorIndex = Math.Min(i, logColors.Length - 1);
+				Color logColor = logColors[colorIndex];
+
+				_logSurface.Print(1, i + 3, $"{viewModel.gameLogs[logIndex]}", logColor);
 			}
 		}
 
@@ -193,13 +217,19 @@ internal class View {
 			_logSurface.Surface[i, systemLogY + 1].Foreground = Color.White;
 		}
 
+		// 系统日志：最新的显示在最上方，使用渐变颜色
 		int maxSystemLogs = systemLogHeight;
-		int systemStartIdx = Math.Max(0, viewModel.systemLogs.Count - maxSystemLogs);
+		int totalSystemLogs = viewModel.systemLogs.Count;
 
-		for (int i = 0; Math.Min(maxSystemLogs, viewModel.systemLogs.Count) > i; i++) {
-			int logIndex = systemStartIdx + i;
-			if (logIndex < viewModel.systemLogs.Count) {
-				_logSurface.Print(1, systemLogY + 2 + i, viewModel.systemLogs[logIndex], Color.Gray);
+		for (int i = 0; i < Math.Min(maxSystemLogs, totalSystemLogs); i++) {
+			// 从最新的日志开始显示（倒序）
+			int logIndex = totalSystemLogs - 1 - i;
+			if (logIndex >= 0) {
+				// 计算颜色索引，最新的使用第一个颜色，然后逐渐变暗
+				int colorIndex = Math.Min(i, logColors.Length - 1);
+				Color logColor = logColors[colorIndex];
+
+				_logSurface.Print(1, systemLogY + 2 + i, viewModel.systemLogs[logIndex], logColor);
 			}
 		}
 	}

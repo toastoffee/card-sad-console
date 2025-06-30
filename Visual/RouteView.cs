@@ -38,10 +38,9 @@ internal class RouteView {
 	private void RenderRouteDescription(ViewModel viewModel) {
 		// 计算中部区域范围
 		int totalHeight = _surface.Height;
-		int middleAreaTop = totalHeight / 4;
-		int middleAreaHeight = totalHeight / 2;
+		int middleAreaHeight = totalHeight;
 		int descriptionAreaHeight = middleAreaHeight / 2;
-		int descriptionY = middleAreaTop;
+		int descriptionY = 1;
 		int descriptionWidth = _surface.Width - 10;
 
 		if (routeDescriptionText == null) {
@@ -54,7 +53,7 @@ internal class RouteView {
 		routeDescriptionText.content = viewModel.routeDescription;
 
 		// 绘制分割线
-		int separatorY = middleAreaTop + descriptionAreaHeight;
+		int separatorY = descriptionY + descriptionAreaHeight;
 		for (int x = 5; x < _surface.Width - 5; x++) {
 			_surface.Surface[x, separatorY].Glyph = '-';
 			_surface.Surface[x, separatorY].Foreground = Color.White;
@@ -84,7 +83,7 @@ internal class RouteView {
 				
 				// 重新计算按钮位置
 				int buttonY = optionsAreaTop + 2 + (i * (3 + 2));
-				button.Position = new Point((_surface.Width - 20) / 2, buttonY);
+				button.Position = new Point((_surface.Width - 70) / 2, buttonY);
 				
 				button.UpdateAndRedraw(default);
 			} else {
@@ -94,7 +93,7 @@ internal class RouteView {
 	}
 
 	private void CreateNewOptionButton(int buttonIndex) {
-		int buttonWidth = 20;
+		int buttonWidth = 70;
 		int buttonHeight = 3;
 		int buttonX = (_surface.Width - buttonWidth) / 2;
 		int buttonY = _surface.Height / 2 + 5 + (buttonIndex * (buttonHeight + 2));

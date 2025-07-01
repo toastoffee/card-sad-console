@@ -7,17 +7,17 @@ using CardConsole.Visual;
 
 public abstract class RogueRouteState : GameState {
 	private ViewModel _viewModel;
-	private List<RotueOption> _currentOptions;
+	private List<RouteOption> _currentOptions;
 
 
 
-	public class RotueOption {
+	public class RouteOption {
 		public string desc;
 		public Action onSelect;
 	}
 
 	protected abstract string GetRouteDesc();
-	protected abstract List<RotueOption> GetRouteOptions();
+	protected abstract List<RouteOption> GetRouteOptions();
 
 	public RogueRouteState() {
 		_viewModel = CardGame.instance.viewModel;

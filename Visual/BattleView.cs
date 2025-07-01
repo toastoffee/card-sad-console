@@ -80,10 +80,8 @@ internal class BattleView {
 		_controls.Add(skipBattleButton);
 
 
-		speedProgressBar = new ProgressBar(20, 1, HorizontalAlignment.Left);
-		speedProgressBar.BarColor = Color.AnsiYellow;
-		speedProgressBar.Position = new Point((_surface.Width - speedProgressBar.Width) / 2, _surface.Height - 3);
-		_controls.Add(speedProgressBar);
+		speedProgressBar = GetNewSpeedProgressBar();
+        _controls.Add(speedProgressBar);
 	}
 
 	public void Render(ViewModel viewModel) {
@@ -171,17 +169,33 @@ internal class BattleView {
 			playerShieldText.content = viewModel.playerShield.ToString();
 		}
 
+		// ½ø¶ÈÌõ
 		_surface.DrawBox(new Rectangle(speedProgressBar.Position.X - 1, speedProgressBar.Position.Y - 1, speedProgressBar.Width + 2, speedProgressBar.Height + 2),
 			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
 				new ColoredGlyph(Color.AnsiYellow, Color.Black)));
-		var prog = viewModel.journey / MathF.Max(viewModel.maxJourney, 1);
-		speedProgressBar.Progress = prog;
-		speedProgressBar.DisplayText = "";
-		speedProgressBar.UpdateAndRedraw(default);
-		Log.PushSys(prog.ToString());
+
+        var prog = viewModel.journey / MathF.Max(viewModel.maxJourney, 1);
+
+		if(prog != speedProgressBar.Progress)
+		{
+			speedProgressBar = GetNewSpeedProgressBar();
+            speedProgressBar.Progress = prog;
+            speedProgressBar.DisplayText = "";
+            speedProgressBar.UpdateAndRedraw(default);
+        }
+        _controls.Add(speedProgressBar);
 
 		_surface.Print(speedProgressBar.Position.X, speedProgressBar.Position.Y - 1, $"Draw Card: {viewModel.journey}/{viewModel.maxJourney}", Color.AnsiYellow);
 	}
+
+	private ProgressBar GetNewSpeedProgressBar()
+	{
+        var speedProgressBar = new ProgressBar(20, 1, HorizontalAlignment.Left);
+        speedProgressBar.BarColor = Color.AnsiYellow;
+        speedProgressBar.Position = new Point((_surface.Width - speedProgressBar.Width) / 2, _surface.Height - 3);
+
+		return speedProgressBar;
+    }
 
 	private void RenderEnemies(ViewModel viewModel) {
 		while (enemyViews.Count < viewModel.enemies.Count) {

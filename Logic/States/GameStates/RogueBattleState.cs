@@ -1,9 +1,10 @@
-﻿using System;
+﻿using CardConsole.Visual;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CardConsole.Visual;
+using static RogueRouteState;
 
 public partial class RogueBattleState : GameState {
 	public static RogueBattleState instance;
@@ -16,13 +17,16 @@ public partial class RogueBattleState : GameState {
 	private IdleState idleState;
 	private CardSelectingState cardSelectingState;
 
+	private CharObject mPresetEnemy;
+
 	public struct CardSelectInput {
 		public bool isBreak;
 		public CardObjcet card;
 	}
 
-	public RogueBattleState() {
+	public RogueBattleState(CharObject enemy = null) {
 		instance = this;
+        mPresetEnemy = enemy;
 
 		// 初始化子状态
 		idleState = new IdleState(this);
@@ -37,7 +41,7 @@ public partial class RogueBattleState : GameState {
 
 	public override void OnEnter() {
 		// 创建新的战斗上下文
-		battleContext = new BattleContext();
+		battleContext = new BattleContext(mPresetEnemy);
 
 		// 为子状态提供战斗上下文的引用
 		idleState.SetBattleContext(battleContext);
@@ -67,10 +71,62 @@ public partial class RogueBattleState : GameState {
 		// 判断是否所有敌人均死亡
 		if (battleContext.IsAllEnemiesDead()) {
 			Log.PushSys("[Battle] Complete Level.");
-			CardGame.instance.stateEngine.ReplaceTop<RogueInitState>();
+			PushRouteState();
 		}
 
 	}
+
+
+	private void PushRouteState()
+	{
+        var weakTreeman = new CharObject
+        {
+            name = "Treeman",
+            hp = 12,
+            maxHp = 12,
+        };
+        weakTreeman.enemyAction = new RogueBattleState.TreemanAction(weakTreeman);
+
+        var normalTreeman = new CharObject
+        {
+            name = "Treeman",
+            hp = 27,
+            maxHp = 27,
+        };
+        normalTreeman.enemyAction = new RogueBattleState.TreemanAction(normalTreeman);
+
+        var strongTreeman = new CharObject
+        {
+            name = "Treeman",
+            hp = 51,
+            maxHp = 51,
+        };
+        strongTreeman.enemyAction = new RogueBattleState.TreemanAction(strongTreeman);
+
+        CardGame.instance.stateEngine.ReplaceTop<RougeRouteTemplateState>(
+            new RougeRouteTemplateState("you can select a battle and engage",
+            new List<RogueRouteState.RouteOption>
+            {
+                    new RouteOption {
+                        desc = "Battle weak treeman",
+                        onSelect = () => {
+                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(weakTreeman));
+                        }
+                    },
+                    new RouteOption {
+                        desc = "Battle normal treeman",
+                        onSelect = () => {
+                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(normalTreeman));
+                        }
+                    },
+                    new RouteOption {
+                        desc = "Battle strong treeman",
+                        onSelect = () => {
+                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(strongTreeman));
+                        }
+                    },
+            }));
+    }
 
 	public void GotoIdle() {
 		subStateEngine.ReplaceTop<IdleState>();

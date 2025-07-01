@@ -20,21 +20,27 @@ public class RogueInitState : RogueRouteState {
 		RoguePlayerData.Instance.EquipGearToSlot(GearSlot.HELMET, new GearObject(nameof(GearDefine.Wood_Helmet)));
 	}
 
-	protected override List<RotueOption> GetRouteOptions() {
-		var ret = new List<RotueOption> {
-			new RotueOption {
+	protected override List<RouteOption> GetRouteOptions() {
+		var ret = new List<RouteOption> {
+			new RouteOption {
 				desc = "Start a new game",
 				onSelect = () => {
 					stateEngine.ReplaceTop<RogueBattleState>();
 				}
 			},
-			new RotueOption {
+			new RouteOption {
 				desc = "Start a new game",
 				onSelect = () => {
 					stateEngine.ReplaceTop<RogueBattleState>();
 				}
 			},
-		};
+            new RouteOption {
+                desc = "Start a new game",
+                onSelect = () => {
+                    stateEngine.ReplaceTop<RogueBattleState>();
+                }
+            },
+        };
 		return ret;
 	}
 }

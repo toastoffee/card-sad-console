@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CardConsole.Visual;
 
+
 public partial class BattleContext {
 	// 战斗核心数据
 	public CharObject playerCharObj = new() {
@@ -38,31 +39,41 @@ public partial class BattleContext {
 		public CardType type;
 	}
 
-	public BattleContext() {
+    public BattleContext(CharObject enemy = null)
+	{
 		_viewModel = CardGame.instance.viewModel;
-		Initialize();
+
+
+		ResetBattleContext();
+
+		enemy = enemy ?? GetDefaultEnemys();
+        enemies.Add(enemy); 
+
+        Initialize();
 	}
 
+	private void ResetBattleContext()
+	{
+        // 重置所有状态
+        playerCharObj = new CharObject
+        {
+            name = "Player",
+        };
+        playerCharObj.LoadFromPlayerProp(RoguePlayerData.Instance.totalProp);
+
+        enemies.Clear();
+        roundIdx = 0;
+        mana = 0;
+
+        yard.Clear();
+        deck.Clear();
+        tokens.Clear();
+
+        selectCardHandler = null;
+        selectCardCtx = null;
+    }
+
 	private void Initialize() {
-		// 重置所有状态
-		playerCharObj = new CharObject {
-			name = "Player",
-		};
-		playerCharObj.LoadFromPlayerProp(RoguePlayerData.Instance.totalProp);
-
-		enemies.Clear();
-		roundIdx = 0;
-		mana = 0;
-
-		yard.Clear();
-		deck.Clear();
-		tokens.Clear();
-
-		selectCardHandler = null;
-		selectCardCtx = null;
-
-		// 设置敌人
-		SetupEnemys();
 
 		// 从装备中初始化牌库
 		InitializeDeckFromEquipment();
@@ -79,14 +90,14 @@ public partial class BattleContext {
 		return ret;
 	}
 
-	private void SetupEnemys() {
+	private CharObject GetDefaultEnemys() {
 		var enemy = new CharObject {
 			name = "Treeman",
 			hp = 27,
 			maxHp = 27,
 		};
 		enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
-		enemies.Add(enemy);
+		return enemy;
 	}
 
 	private void InitializeDeckFromEquipment() {

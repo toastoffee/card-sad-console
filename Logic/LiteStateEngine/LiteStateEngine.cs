@@ -54,6 +54,25 @@ public class LiteStateEngine {
 	public void ReplaceTop<T>() where T : LiteState {
 		ReplaceTop(typeof(T));
 	}
+
+	public void ReplaceTop<T>(T t) where T : LiteState
+	{
+        var top = m_stack.Peek();
+        if (top.GetType() == t.GetType())
+        {
+            Log.LogError($"State of type {t.GetType()} is already on top of the stack.");
+            return;
+        }
+        top.OnExit();
+        top.SetStateActive(false);
+        m_stack.Pop();
+
+        m_stack.Push(t);
+        t.SetStateActive(true);
+        t.OnEnter();
+
+    }
+
 	public void ReplaceTop(Type type) {
 		var top = m_stack.Peek();
 		if (top.GetType() == type) {

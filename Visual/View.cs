@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SadConsole;
-using SadConsole.UI;
-using SadConsole.UI.Controls;
-
-namespace CardConsole.Visual;
+﻿namespace CardConsole.Visual;
 
 internal class View {
 	private ScreenSurface _battleSurface;
@@ -72,11 +63,11 @@ internal class View {
 		_handCardSurface.Clear();
 
 		// 根据状态渲染对应视图
-		switch (viewModel.currentStateType) {
-			case GameStateType.Battle:
+		switch (viewModel.displayState) {
+			case GameDisplayStateType.Battle:
 				battleView.Render(viewModel);
 				break;
-			case GameStateType.Route:
+			case GameDisplayStateType.Route:
 				routeView.Render(viewModel);
 				break;
 		}
@@ -124,7 +115,7 @@ internal class View {
 		// 渲染玩家属性
 		int statsY = currentY + 3;
 		int interval = 2;
-		_infoSurface.Print(playerStatsLeft, statsY, $"HP: {viewModel.playerProp.hp} / {viewModel.playerProp.maxHp}", Color.White);
+		_infoSurface.Print(playerStatsLeft, statsY, $"HP: {viewModel.playerHp} / {viewModel.playerProp.maxHp}", Color.White);
 		statsY += interval;
 		_infoSurface.Print(playerStatsLeft, statsY, $"Attack: {viewModel.playerProp.atk}", Color.White);
 		statsY += interval;

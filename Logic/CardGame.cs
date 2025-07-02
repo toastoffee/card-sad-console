@@ -1,10 +1,4 @@
 ﻿using CardConsole.Visual;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 class CardGame {
 	public static CardGame instance;
@@ -18,7 +12,6 @@ class CardGame {
 	public void Setup() {
 		var playerData = RoguePlayerData.Instance;
 		playerData.baseProp = new PlayerProp {
-			hp = 70,
 			maxHp = 70,
 			def = 2,
 			atk = 2,
@@ -32,6 +25,8 @@ class CardGame {
 		stateEngine = new LiteStateEngine(new List<LiteState> {
 			initState,
 			battleState,
+			new RogueBattleFinishState(),
+			new RogueInterludeState(),
 		});
 	}
 

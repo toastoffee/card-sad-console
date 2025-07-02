@@ -1,10 +1,4 @@
-﻿using CardConsole.Visual;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static RogueRouteState;
+﻿using static RogueRouteState;
 
 public partial class RogueBattleState : GameState {
 	public static RogueBattleState instance;
@@ -17,16 +11,13 @@ public partial class RogueBattleState : GameState {
 	private IdleState idleState;
 	private CardSelectingState cardSelectingState;
 
-	private CharObject mPresetEnemy;
-
 	public struct CardSelectInput {
 		public bool isBreak;
 		public CardObjcet card;
 	}
 
-	public RogueBattleState(CharObject enemy = null) {
+	public RogueBattleState() {
 		instance = this;
-        mPresetEnemy = enemy;
 
 		// 初始化子状态
 		idleState = new IdleState(this);
@@ -41,7 +32,7 @@ public partial class RogueBattleState : GameState {
 
 	public override void OnEnter() {
 		// 创建新的战斗上下文
-		battleContext = new BattleContext(mPresetEnemy);
+		battleContext = new BattleContext();
 
 		// 为子状态提供战斗上下文的引用
 		idleState.SetBattleContext(battleContext);
@@ -57,7 +48,6 @@ public partial class RogueBattleState : GameState {
 			return;
 		}
 
-		// 委托给子状态处理
 		var currentState = subStateEngine.frontState;
 		if (currentState is IdleState idle) {
 			idle.OnTick();
@@ -69,64 +59,22 @@ public partial class RogueBattleState : GameState {
 		battleContext?.SyncToViewModel();
 
 		// 判断是否所有敌人均死亡
-		if (battleContext.IsAllEnemiesDead()) {
-			Log.PushSys("[Battle] Complete Level.");
-			PushRouteState();
+		if(battleContext.playerCharObj.hp <= 0) {
+			Log.PushSys("[Battle] Player is dead. Game Over.");
+			CardGame.instance.stateEngine.ReplaceTop<RogueInitState>();
+			return;
 		}
-
+		if (battleContext.IsAllEnemiesDead()) {
+			FinishBattle();
+		}
 	}
 
+	private void FinishBattle() {
+		Log.PushSys("[Battle] Complete Level.");
+		RoguePlayerData.Instance.hp = battleContext.playerCharObj.hp;
 
-	private void PushRouteState()
-	{
-        var weakTreeman = new CharObject
-        {
-            name = "Treeman",
-            hp = 12,
-            maxHp = 12,
-        };
-        weakTreeman.enemyAction = new RogueBattleState.TreemanAction(weakTreeman);
-
-        var normalTreeman = new CharObject
-        {
-            name = "Treeman",
-            hp = 27,
-            maxHp = 27,
-        };
-        normalTreeman.enemyAction = new RogueBattleState.TreemanAction(normalTreeman);
-
-        var strongTreeman = new CharObject
-        {
-            name = "Treeman",
-            hp = 51,
-            maxHp = 51,
-        };
-        strongTreeman.enemyAction = new RogueBattleState.TreemanAction(strongTreeman);
-
-        CardGame.instance.stateEngine.ReplaceTop<RougeRouteTemplateState>(
-            new RougeRouteTemplateState("you can select a battle and engage",
-            new List<RogueRouteState.RouteOption>
-            {
-                    new RouteOption {
-                        desc = "Battle weak treeman",
-                        onSelect = () => {
-                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(weakTreeman));
-                        }
-                    },
-                    new RouteOption {
-                        desc = "Battle normal treeman",
-                        onSelect = () => {
-                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(normalTreeman));
-                        }
-                    },
-                    new RouteOption {
-                        desc = "Battle strong treeman",
-                        onSelect = () => {
-                            stateEngine.ReplaceTop<RogueBattleState>(new RogueBattleState(strongTreeman));
-                        }
-                    },
-            }));
-    }
+		stateEngine.ReplaceTop<RogueBattleFinishState>();
+	}
 
 	public void GotoIdle() {
 		subStateEngine.ReplaceTop<IdleState>();

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CardConsole.Visual;
+﻿using CardConsole.Visual;
 
 public abstract class RogueRouteState : GameState {
 	private ViewModel _viewModel;
@@ -24,8 +19,7 @@ public abstract class RogueRouteState : GameState {
 	}
 
 	public override void OnEnter() {
-		_currentOptions = GetRouteOptions();
-		SyncToViewModel();
+		NotifyUpdateOption();
 	}
 
 	public override void OnTick() {
@@ -41,10 +35,10 @@ public abstract class RogueRouteState : GameState {
 		SyncToViewModel();
 	}
 
-	protected void SyncToViewModel() {
+	private void SyncToViewModel() {
 		if (_viewModel == null) return;
 
-		_viewModel.currentStateType = GameStateType.Route;
+		_viewModel.displayState = GameDisplayStateType.Route;
 		_viewModel.routeDescription = GetRouteDesc();
 
 		_viewModel.routeOptions.Clear();
@@ -57,5 +51,9 @@ public abstract class RogueRouteState : GameState {
 				});
 			}
 		}
+	}
+
+	protected void NotifyUpdateOption() {
+		_currentOptions = GetRouteOptions();
 	}
 }

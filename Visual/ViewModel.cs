@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace CardConsole.Visual;
+﻿namespace CardConsole.Visual;
 
-public enum GameStateType {
+public enum GameDisplayStateType {
 	Battle,
 	Route
+}
+
+public enum PopupDisplayType {
+	NONE,
+	ITEM_DETAIL,
 }
 
 public class RouteOptionViewModel {
@@ -33,7 +33,8 @@ public class ViewModel {
 	public int journey;
 	public int maxJourney;
 	public PlayerProp playerProp; // 添加玩家总属性
-	public GameStateType currentStateType; // 添加状态类型标识
+	public GameDisplayStateType displayState; // 添加状态类型标识
+	public PopupDisplayType popupState;
 	public int playerMoney;
 
 	// Route状态相关数据

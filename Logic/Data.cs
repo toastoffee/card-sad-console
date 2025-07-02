@@ -27,7 +27,6 @@ public class CharObject {
 	public RogueBattleState.EnemyAction enemyAction;
 
 	public PlayerProp playerProp => new PlayerProp {
-		hp = hp,
 		maxHp = maxHp,
 		def = def,
 		atk = atk,
@@ -35,8 +34,8 @@ public class CharObject {
 		maxJourney = maxJourney,
 	};
 
-	public void LoadFromPlayerProp(PlayerProp prop) {
-		hp = prop.hp;
+	public void LoadFromPlayerProp(int hp, PlayerProp prop) {
+		this.hp = hp;
 		maxHp = prop.maxHp;
 		def = prop.def;
 		atk = prop.atk;
@@ -75,7 +74,6 @@ public class GearObject {
 }
 
 public struct PlayerProp {
-	public int hp;
 	public int maxHp;
 	public int def;
 	public int atk;
@@ -84,7 +82,6 @@ public struct PlayerProp {
 
 	public PlayerProp Add(PlayerProp other) {
 		var ret = new PlayerProp() {
-			hp = this.hp + other.hp,
 			maxHp = this.maxHp + other.maxHp,
 			def = this.def + other.def,
 			atk = this.atk + other.atk,
@@ -147,21 +144,22 @@ public class RoguePlayerData {
 	}
 
 	public List<EquipmentSlot> equipmentSlots = new List<EquipmentSlot>();
+	public int hp;
 	public int money = 99;
 
 	private RoguePlayerData() {
 		// 初始化基础属性
 		baseProp = new PlayerProp {
-			hp = 70,
 			maxHp = 70,
 			def = 0,
 			atk = 0,
 			speed = 0
 		};
-
 		// 初始化所有装备槽位
 		InitializeEquipmentSlots();
 		UpdateGearProp();
+
+		hp = totalProp.maxHp;
 	}
 
 	private void InitializeEquipmentSlots() {

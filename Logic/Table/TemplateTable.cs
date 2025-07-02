@@ -1,6 +1,4 @@
 //一个模板类，用来创建一个表，与直接使用Dictionary不同的是可以提供一个构造函数，配合StaticInst可以很方便的构造静态单例表
-using System.Collections.Generic;
-
 #region StaticInst
 /*
  * 一个模板，用来方便创建一个静态实例，并且不需要显式初始化和赋值（因为是struct），而可以懒启动

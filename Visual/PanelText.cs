@@ -1,100 +1,98 @@
-﻿using SadConsole;
-
-namespace CardConsole.Visual;
+﻿namespace CardConsole.Visual;
 internal class PanelText {
-	public Point position { get; private set; }
+  public Point position { get; private set; }
 
-	public string header = "";
+  public string header = "";
 
-	private string m_content = "";
-	public string content {
-		get => m_content;
-		set {
-			m_content = value;
-			UpdateVisual();
-		}
-	}
+  private string m_content = "";
+  public string content {
+    get => m_content;
+    set {
+      m_content = value;
+      UpdateVisual();
+    }
+  }
 
-	public Color color = Color.White;
-	public Color contentColor = Color.White;
-	public int width, height;
+  public Color color = Color.White;
+  public Color contentColor = Color.White;
+  public int width, height;
 
-	ScreenSurface canvas;
+  ScreenSurface canvas;
 
-	public enum AlignType {
-		Left,
-		Center
-	}
+  public enum AlignType {
+    Left,
+    Center
+  }
 
-	public AlignType alignType = AlignType.Left;
+  public AlignType alignType = AlignType.Left;
 
-	public PanelText(Point position, string header, int width, int height, Color color, ScreenSurface canvas) {
-		this.position = position;
-		this.header = header;
-		this.width = width;
-		this.height = height;
-		this.color = color;
-		this.canvas = canvas;
-	}
+  public PanelText(Point position, string header, int width, int height, Color color, ScreenSurface canvas) {
+    this.position = position;
+    this.header = header;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+    this.canvas = canvas;
+  }
 
-	// 添加设置位置的方法
-	public void SetPosition(Point newPosition) {
-		this.position = newPosition;
-		UpdateVisual();
-	}
+  // 添加设置位置的方法
+  public void SetPosition(Point newPosition) {
+    this.position = newPosition;
+    UpdateVisual();
+  }
 
-	// 添加设置尺寸的方法
-	public void SetSize(int newWidth, int newHeight) {
-		this.width = newWidth;
-		this.height = newHeight;
-		UpdateVisual();
-	}
+  // 添加设置尺寸的方法
+  public void SetSize(int newWidth, int newHeight) {
+    this.width = newWidth;
+    this.height = newHeight;
+    UpdateVisual();
+  }
 
-	public void UpdateVisual() {
+  public void UpdateVisual() {
 
-		canvas.DrawBox(new Rectangle(position.X, position.Y, width, height),
-		ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin, new ColoredGlyph(color, Color.Black)));
+    canvas.DrawBox(new Rectangle(position.X, position.Y, width, height),
+    ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin, new ColoredGlyph(color, Color.Black)));
 
-		canvas.Print(position.X + 1, position.Y, header);
+    canvas.Print(position.X + 1, position.Y, header);
 
-		int maxLineLength = width - 2; // 假设左右各有1个边框
-		List<string> lines = new List<string>();
+    int maxLineLength = width - 2; // 假设左右各有1个边框
+    List<string> lines = new List<string>();
 
-		lines = WordWrap(content, maxLineLength);
+    lines = WordWrap(content, maxLineLength);
 
-		// 输出每一行
-		for (int i = 0; i < lines.Count; i++) {
-			int printX;
-			if (alignType == AlignType.Center) {
-				printX = position.X + width / 2 - lines[i].Length / 2;
-			} else {
-				printX = position.X + 1;
-			}
-			canvas.Print(printX, position.Y + 1 + i, lines[i], contentColor);
-		}
+    // 输出每一行
+    for (int i = 0; i < lines.Count; i++) {
+      int printX;
+      if (alignType == AlignType.Center) {
+        printX = position.X + width / 2 - lines[i].Length / 2;
+      } else {
+        printX = position.X + 1;
+      }
+      canvas.Print(printX, position.Y + 1 + i, lines[i], contentColor);
+    }
 
-		canvas.IsDirty = true;
-	}
+    canvas.IsDirty = true;
+  }
 
-	public static List<string> WordWrap(string text, int maxLineLength) {
-		var words = text.Split(' ');
-		var lines = new List<string>();
-		var currentLine = "";
+  public static List<string> WordWrap(string text, int maxLineLength) {
+    var words = text.Split(' ');
+    var lines = new List<string>();
+    var currentLine = "";
 
-		foreach (var word in words) {
-			if ((currentLine.Length + word.Length + 1) > maxLineLength) {
-				lines.Add(currentLine);
-				currentLine = word;
-			} else {
-				if (currentLine.Length > 0)
-					currentLine += " ";
-				currentLine += word;
-			}
-		}
-		if (currentLine.Length > 0)
-			lines.Add(currentLine);
+    foreach (var word in words) {
+      if ((currentLine.Length + word.Length + 1) > maxLineLength) {
+        lines.Add(currentLine);
+        currentLine = word;
+      } else {
+        if (currentLine.Length > 0)
+          currentLine += " ";
+        currentLine += word;
+      }
+    }
+    if (currentLine.Length > 0)
+      lines.Add(currentLine);
 
-		return lines;
-	}
+    return lines;
+  }
 }
 

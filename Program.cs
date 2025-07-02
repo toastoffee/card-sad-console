@@ -1,6 +1,5 @@
-﻿using SadConsole.Configuration;
-
 using CardConsole.Visual;
+using SadConsole.Configuration;
 
 Settings.WindowTitle = "My SadConsole Game";
 

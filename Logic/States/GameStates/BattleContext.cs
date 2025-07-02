@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using CardConsole.Visual;
 
 
@@ -39,45 +36,39 @@ public partial class BattleContext {
 		public CardType type;
 	}
 
-    public BattleContext(CharObject enemy = null)
-	{
+	public BattleContext(CharObject enemy = null) {
 		_viewModel = CardGame.instance.viewModel;
 
-
-		ResetBattleContext();
+		Setup();
 
 		enemy = enemy ?? GetDefaultEnemys();
-        enemies.Add(enemy); 
+		enemies.Add(enemy);
 
-        Initialize();
+		StartBattle();
 	}
 
-	private void ResetBattleContext()
-	{
-        // 重置所有状态
-        playerCharObj = new CharObject
-        {
-            name = "Player",
-        };
-        playerCharObj.LoadFromPlayerProp(RoguePlayerData.Instance.totalProp);
+	private void Setup() {
+		// 重置所有状态
+		playerCharObj = new CharObject {
+			name = "Player",
+		};
+		playerCharObj.LoadFromPlayerProp(RoguePlayerData.Instance.hp, RoguePlayerData.Instance.totalProp);
 
-        enemies.Clear();
-        roundIdx = 0;
-        mana = 0;
+		enemies.Clear();
+		roundIdx = 0;
+		mana = 0;
 
-        yard.Clear();
-        deck.Clear();
-        tokens.Clear();
+		yard.Clear();
+		deck.Clear();
+		tokens.Clear();
 
-        selectCardHandler = null;
-        selectCardCtx = null;
-    }
+		selectCardHandler = null;
+		selectCardCtx = null;
+	}
 
-	private void Initialize() {
-
+	private void StartBattle() {
 		// 从装备中初始化牌库
 		InitializeDeckFromEquipment();
-
 		deck.Shuffle();
 		OnRoundStart();
 	}
@@ -259,7 +250,7 @@ public partial class BattleContext {
 	public void SyncToViewModel() {
 		if (_viewModel == null) return;
 
-		_viewModel.currentStateType = GameStateType.Battle;
+		_viewModel.displayState = GameDisplayStateType.Battle;
 		_viewModel.turn = roundIdx;
 		_viewModel.eng = mana;
 		_viewModel.maxEng = 3;
@@ -296,6 +287,5 @@ public partial class BattleContext {
 		//覆写信息面板，用战斗内的当前属性显示
 		_viewModel.playerProp = playerCharObj.playerProp;
 	}
-
 	#endregion
 }

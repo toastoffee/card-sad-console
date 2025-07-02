@@ -1,123 +1,118 @@
-using System;
-using System.Collections.Generic;
-using SadConsole;
 using SadConsole.UI;
 using SadConsole.UI.Controls;
 
 namespace CardConsole.Visual;
 
 internal class RouteView {
-	private ScreenSurface _surface;
-	private ControlHost _controls;
-	
-	// Route×´Ì¬×¨ÓÃ×é¼ş
-	private PanelText routeDescriptionText;
-	private List<ButtonBox> routeOptionButtons = new List<ButtonBox>();
+  private ScreenSurface _surface;
+  private ControlHost _controls;
 
-	public RouteView(ScreenSurface surface) {
-		_surface = surface;
-		_controls = new ControlHost();
-		
-		// ½«ControlHostÌí¼Óµ½±íÃæ
-		_surface.SadComponents.Add(_controls);
-	}
+  // RouteçŠ¶æ€ä¸“ç”¨ç»„ä»¶
+  private PanelText routeDescriptionText;
+  private List<ButtonBox> routeOptionButtons = new List<ButtonBox>();
 
-	public void Render(ViewModel viewModel) {
-			// ÏÈ»æÖÆÂ·ÏßÇøÓòµÄ±ß¿ò
-		_surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
-			ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
-				new ColoredGlyph(Color.White, Color.Black)));
+  public RouteView(ScreenSurface surface) {
+    _surface = surface;
+    _controls = new ControlHost();
 
-		// äÖÈ¾Â·ÏßÃèÊö
-		RenderRouteDescription(viewModel);
+    // å°†ControlHostæ·»åŠ åˆ°è¡¨é¢
+    _surface.SadComponents.Add(_controls);
+  }
 
-		// äÖÈ¾Ñ¡Ïî°´Å¥
-		RenderRouteOptions(viewModel);
-	}
+  public void Render(ViewModel viewModel) {
+    // å…ˆç»˜åˆ¶è·¯çº¿åŒºåŸŸçš„è¾¹æ¡†
+    _surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
+      ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
+        new ColoredGlyph(Color.White, Color.Black)));
 
-	private void RenderRouteDescription(ViewModel viewModel) {
-		// ¼ÆËãÖĞ²¿ÇøÓò·¶Î§
-		int totalHeight = _surface.Height;
-		int middleAreaHeight = totalHeight;
-		int descriptionAreaHeight = middleAreaHeight / 2;
-		int descriptionY = 1;
-		int descriptionWidth = _surface.Width - 10;
+    // æ¸²æŸ“è·¯çº¿æè¿°
+    RenderRouteDescription(viewModel);
 
-		if (routeDescriptionText == null) {
-			routeDescriptionText = new PanelText(new Point(5, descriptionY), "Route", descriptionWidth, descriptionAreaHeight, Color.Cyan, _surface);
-			routeDescriptionText.alignType = PanelText.AlignType.Center;
-		} else {
-			routeDescriptionText.SetPosition(new Point(5, descriptionY));
-			routeDescriptionText.SetSize(descriptionWidth, descriptionAreaHeight);
-		}
-		routeDescriptionText.content = viewModel.routeDescription;
+    // æ¸²æŸ“é€‰é¡¹æŒ‰é’®
+    RenderRouteOptions(viewModel);
+  }
 
-		// »æÖÆ·Ö¸îÏß
-		int separatorY = descriptionY + descriptionAreaHeight;
-		for (int x = 5; x < _surface.Width - 5; x++) {
-			_surface.Surface[x, separatorY].Glyph = '-';
-			_surface.Surface[x, separatorY].Foreground = Color.White;
-		}
-	}
+  private void RenderRouteDescription(ViewModel viewModel) {
+    // è®¡ç®—ä¸­éƒ¨åŒºåŸŸèŒƒå›´
+    int totalHeight = _surface.Height;
+    int middleAreaHeight = totalHeight;
+    int descriptionAreaHeight = middleAreaHeight / 2;
+    int descriptionY = 1;
+    int descriptionWidth = _surface.Width - 10;
 
-	private void RenderRouteOptions(ViewModel viewModel) {
-		// È·±£Ñ¡Ïî°´Å¥ÊıÁ¿ÓëÑ¡ÏîÊıÁ¿Ò»ÖÂ
-		while (routeOptionButtons.Count < viewModel.routeOptions.Count) {
-			CreateNewOptionButton(routeOptionButtons.Count);
-		}
+    if (routeDescriptionText == null) {
+      routeDescriptionText = new PanelText(new Point(5, descriptionY), "Route", descriptionWidth, descriptionAreaHeight, Color.Cyan, _surface);
+      routeDescriptionText.alignType = PanelText.AlignType.Center;
+    } else {
+      routeDescriptionText.SetPosition(new Point(5, descriptionY));
+      routeDescriptionText.SetSize(descriptionWidth, descriptionAreaHeight);
+    }
+    routeDescriptionText.content = viewModel.routeDescription;
 
-		// ÖØĞÂ¼ÆËã°´Å¥Î»ÖÃÒÔÊÊÓ¦ĞÂµÄ²¼¾Ö
-		int totalHeight = _surface.Height;
-		int middleAreaTop = totalHeight / 4;
-		int middleAreaHeight = totalHeight / 2;
-		int descriptionAreaHeight = middleAreaHeight / 2;
-		int optionsAreaTop = middleAreaTop + descriptionAreaHeight + 1; // +1 for separator
+    // ç»˜åˆ¶åˆ†å‰²çº¿
+    int separatorY = descriptionY + descriptionAreaHeight;
+    for (int x = 5; x < _surface.Width - 5; x++) {
+      _surface.Surface[x, separatorY].Glyph = '-';
+      _surface.Surface[x, separatorY].Foreground = Color.White;
+    }
+  }
 
-		for (int i = 0; i < routeOptionButtons.Count; i++) {
-			var button = routeOptionButtons[i];
-			if (i < viewModel.routeOptions.Count) {
-				var option = viewModel.routeOptions[i];
-				button.Text = option.description;
-				button.IsVisible = true;
-				button.Tag = option.index;
-				
-				// ÖØĞÂ¼ÆËã°´Å¥Î»ÖÃ
-				int buttonY = optionsAreaTop + 2 + (i * (3 + 2));
-				button.Position = new Point((_surface.Width - 70) / 2, buttonY);
-				
-				button.UpdateAndRedraw(default);
-			} else {
-				button.IsVisible = false;
-			}
-		}
-	}
+  private void RenderRouteOptions(ViewModel viewModel) {
+    // ç¡®ä¿é€‰é¡¹æŒ‰é’®æ•°é‡ä¸é€‰é¡¹æ•°é‡ä¸€è‡´
+    while (routeOptionButtons.Count < viewModel.routeOptions.Count) {
+      CreateNewOptionButton(routeOptionButtons.Count);
+    }
 
-	private void CreateNewOptionButton(int buttonIndex) {
-		int buttonWidth = 70;
-		int buttonHeight = 3;
-		int buttonX = (_surface.Width - buttonWidth) / 2;
-		int buttonY = _surface.Height / 2 + 5 + (buttonIndex * (buttonHeight + 2));
+    // é‡æ–°è®¡ç®—æŒ‰é’®ä½ç½®ä»¥é€‚åº”æ–°çš„å¸ƒå±€
+    int totalHeight = _surface.Height;
+    int middleAreaTop = totalHeight / 4;
+    int middleAreaHeight = totalHeight / 2;
+    int descriptionAreaHeight = middleAreaHeight / 2;
+    int optionsAreaTop = middleAreaTop + descriptionAreaHeight + 1; // +1 for separator
 
-		var optionButton = new ButtonBox(buttonWidth, buttonHeight) {
-			Position = new Point(buttonX, buttonY),
-			Text = "",
-			Tag = buttonIndex
-		};
+    for (int i = 0; i < routeOptionButtons.Count; i++) {
+      var button = routeOptionButtons[i];
+      if (i < viewModel.routeOptions.Count) {
+        var option = viewModel.routeOptions[i];
+        button.Text = option.description;
+        button.IsVisible = true;
+        button.Tag = option.index;
 
-		optionButton.Click += (sender, e) => {
-			if (sender is ButtonBox button && button.Tag is int optionIndex) {
-				GameInput.Set(GameInput.Type.ROUTE_STATE_SELECT, new InputValue {
-					intValue = optionIndex,
-				});
+        // é‡æ–°è®¡ç®—æŒ‰é’®ä½ç½®
+        int buttonY = optionsAreaTop + 2 + (i * (3 + 2));
+        button.Position = new Point((_surface.Width - 70) / 2, buttonY);
+      } else {
+        button.IsVisible = false;
+      }
+    }
+  }
 
-				button.IsEnabled = false;
-				System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
-					button.IsEnabled = true;
-				});
-			}
-		};
+  private void CreateNewOptionButton(int buttonIndex) {
+    int buttonWidth = 70;
+    int buttonHeight = 3;
+    int buttonX = (_surface.Width - buttonWidth) / 2;
+    int buttonY = _surface.Height / 2 + 5 + (buttonIndex * (buttonHeight + 2));
 
-		_controls.Add(optionButton);
-		routeOptionButtons.Add(optionButton);
-	}
+    var optionButton = new ButtonBox(buttonWidth, buttonHeight) {
+      Position = new Point(buttonX, buttonY),
+      Text = "",
+      Tag = buttonIndex
+    };
+
+    optionButton.Click += (sender, e) => {
+      if (sender is ButtonBox button && button.Tag is int optionIndex) {
+        GameInput.Set(GameInput.Type.ROUTE_STATE_SELECT, new InputValue {
+          intValue = optionIndex,
+        });
+
+        button.IsEnabled = false;
+        System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
+          button.IsEnabled = true;
+        });
+      }
+    };
+
+    _controls.Add(optionButton);
+    routeOptionButtons.Add(optionButton);
+  }
 }

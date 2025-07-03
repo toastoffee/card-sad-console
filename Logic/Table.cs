@@ -1,4 +1,4 @@
-﻿using static GearModel;
+using static GearModel;
 
 public class CardModel {
   public string modelId;
@@ -32,6 +32,13 @@ public static class CardDefine {
     cost = 2,
     desc = "cause 15 damage",
     cardType = CardType.WEAPON,
+  };
+  public static CardModel Fire => new CardModel {
+    modelId = nameof(Fire),
+    cost = 0,
+    desc = "add 1 Fire",
+    cardType = CardType.MAGIC,
+    cardTags = new List<CardTag> { CardTag.STICKY, CardTag.CONSIST },
   };
 }
 
@@ -152,7 +159,7 @@ public static class GearDefine {
         modelId = nameof(Fire_Magic),
         availSlotFlag = GearSlot.MAGIC,
         cards = new List<CardRecord>() {
-          new CardRecord(nameof(CardDefine.Strike), 5),
+          new CardRecord(nameof(CardDefine.Fire), 1),
         }
       };
       return ret;

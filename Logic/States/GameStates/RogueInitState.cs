@@ -1,4 +1,4 @@
-﻿public class RogueInitState : RogueRouteState {
+public class RogueInitState : RogueRouteState {
   protected override string GetRouteDesc() {
     var ret = "Rogue game init.";
     return ret;
@@ -12,6 +12,7 @@
     RoguePlayerData.Instance.EquipGearToSlot(GearSlot.ARMOR, new GearObject(nameof(GearDefine.Wood_Armor)));
     RoguePlayerData.Instance.EquipGearToSlot(GearSlot.SHOE, new GearObject(nameof(GearDefine.Wood_Shoe)));
     RoguePlayerData.Instance.EquipGearToSlot(GearSlot.HELMET, new GearObject(nameof(GearDefine.Wood_Helmet)));
+    RoguePlayerData.Instance.EquipGearToSlot(GearSlot.MAGIC, new GearObject(nameof(GearDefine.Fire_Magic)));
   }
 
   protected override List<RouteOption> GetRouteOptions() {

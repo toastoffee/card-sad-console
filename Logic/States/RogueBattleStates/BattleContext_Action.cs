@@ -41,6 +41,9 @@ partial class BattleContext {
       case ActionFuncType.GAIN_SHIELD:
         _ExcuteGainShieldAction(action);
         break;
+      case ActionFuncType.ADD_BUFF:
+        _ExecuteAddBuffAction(action);
+        break;
     }
   }
 
@@ -67,7 +70,13 @@ partial class BattleContext {
   }
 
   private void _ExecuteAddBuffAction(ActionDescriptor action) {
-    
+    var buff = new CharObject.Buff {
+      buffId = action.addBuffId,
+      stack = action.buff_stack_0,
+    };
+    foreach (var target in FindTarget(action)) {
+      target.buffs.Add(buff);
+    }
   }
 
   private IEnumerable<CharObject> FindTarget(ActionDescriptor action) {

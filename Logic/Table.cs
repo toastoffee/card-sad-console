@@ -1,12 +1,15 @@
 using static GearModel;
+using static BattleContext;
 
 public class CardModel {
   public string modelId;
   public int cost;
   public string desc;
   public CardType cardType;
-  public List<CardTag> cardTags;
+  public List<CardTag> cardTags = new();
+  public Action<BattleContext, Action<ActionDescriptor>> action;
 }
+
 [AutoModelTable(typeof(CardModel))]
 public static class CardDefine {
   public static CardModel Strike => new CardModel {
@@ -14,31 +17,45 @@ public static class CardDefine {
     cost = 1,
     desc = "cause 6 damage",
     cardType = CardType.WEAPON,
+    action = (ctx, enqueue) => {
+      enqueue(CommonAction.player_atack(1.0f));
+    },
   };
   public static CardModel Swap => new CardModel {
     modelId = nameof(Swap),
     cost = 1,
     desc = "discard all weapons/armors, and draw other kind as same counts",
     cardType = CardType.TRINKET,
+    action = null,
   };
   public static CardModel Defend => new CardModel {
     modelId = nameof(Defend),
     cost = 1,
     desc = "gain 5 defend",
     cardType = CardType.ARMOR,
+    action = (ctx, enqueue) => {
+      enqueue(CommonAction.player_gainShield(ratioShield: 1.0f));
+    },
   };
   public static CardModel Hit => new CardModel {
     modelId = nameof(Hit),
     cost = 2,
     desc = "cause 15 damage",
     cardType = CardType.WEAPON,
+    action = (ctx, enqueue) => {
+      enqueue(CommonAction.player_atack(2.5f));
+    },
   };
   public static CardModel Fire => new CardModel {
     modelId = nameof(Fire),
     cost = 0,
     desc = "add 1 Fire",
     cardType = CardType.MAGIC,
-    cardTags = new List<CardTag> { CardTag.STICKY, CardTag.CONSIST },
+    cardTags = new List<CardTag> {
+      CardTag.STICKY,
+      CardTag.CONSIST,
+      CardTag.FRAGILE,
+    },
   };
 }
 
@@ -50,6 +67,7 @@ public static class EnumTrans {
       new KeyValuePair<CardType, string>(CardType.HELMET, "Helmet"),
       new KeyValuePair<CardType, string>(CardType.SHOE, "Shoe"),
       new KeyValuePair<CardType, string>(CardType.TRINKET, "Trinket"),
+      new KeyValuePair<CardType, string>(CardType.MAGIC, "Magic"),
     });
     Impl<GameStateEnum>.Set(new List<KeyValuePair<GameStateEnum, string>> {
       new KeyValuePair<GameStateEnum, string>(GameStateEnum.IDLE, "等待出牌"),
@@ -59,18 +77,39 @@ public static class EnumTrans {
     Impl<CardTag>.Set(new List<KeyValuePair<CardTag, string>> {
       new KeyValuePair<CardTag, string>(CardTag.STICKY, "Sticky"),
     });
+    Impl<BuffId>.SetFunc((BuffId id) => {
+      switch (id) {
+        case BuffId.攻击力:
+          return "Attack+";
+        case BuffId.防守反击:
+          return "Counter Attack";
+        default:
+          return id.ToString();
+      }
+    });
   }
 
   public static class Impl<T> {
     public static Dictionary<T, string> dict = new Dictionary<T, string>();
+    public static Func<T, string> toStringFunc = null;
     public static void Set(List<KeyValuePair<T, string>> list) {
       foreach (var pair in list) {
         dict[pair.Key] = pair.Value;
       }
     }
+
+    public static void SetFunc(Func<T, string> toStringFunc) {
+      Impl<T>.toStringFunc = toStringFunc;
+    }
   }
   public static string Get<T>(T value) {
-    return Impl<T>.dict?[value] ?? value.ToString();
+    if (Impl<T>.toStringFunc != null) {
+      return Impl<T>.toStringFunc(value);
+    } else if (Impl<T>.dict != null && Impl<T>.dict.TryGetValue(value, out var ret)) {
+      return ret;
+    }
+    Log.PushSys($"[EnumTrans] no trans for [{value}]");
+    return value.ToString();
   }
 }
 
@@ -97,7 +136,7 @@ public class GearModel {
 
   public string modelId;
   public GearSlot availSlotFlag;
-  public PlayerProp baseProp;
+  public CharProp baseProp;
   public List<CardRecord> cards;
 }
 
@@ -110,7 +149,10 @@ public static class GearDefine {
         availSlotFlag = GearSlot.MAIN_WEAPON,
         cards = new List<CardRecord>() {
           new CardRecord(nameof(CardDefine.Strike), 5),
-        }
+        },
+        baseProp = new CharProp() {
+          atk = 3,
+        },
       };
       return ret;
     }
@@ -123,7 +165,10 @@ public static class GearDefine {
         availSlotFlag = GearSlot.ARMOR,
         cards = new List<CardRecord>() {
           new CardRecord(nameof(CardDefine.Defend), 5),
-        }
+        },
+        baseProp = new CharProp() {
+          def = 3,
+        },
       };
       return ret;
     }

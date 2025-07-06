@@ -1,13 +1,13 @@
-﻿public partial class RogueBattleState {
+public partial class RogueBattleState {
   // 执行所有敌人的行动
   public void ExecuteAllEnemyActions() {
     // 这个方法已经被移动到 BattleContext 中，这里保留是为了向后兼容
     battleContext?.ExecuteAllEnemyActions();
   }
 
-  public abstract class EnemyAction {
+  public abstract class LegacyEnemyAction {
     public CharObject parent;
-    public EnemyAction(CharObject parent) {
+    public LegacyEnemyAction(CharObject parent) {
       this.parent = parent;
     }
 
@@ -21,16 +21,8 @@
     public virtual void ExecuteAction() {
 
     }
-
-    public void ExecuteAttackAction(int dmg) {
-      instance.battleContext.DoAttack(new BattleContext.AttackParam {
-        attacker = parent,
-        deffender = instance.battleContext.playerCharObj,
-        dmg = dmg
-      });
-    }
   }
-  public class TreemanAction : EnemyAction {
+  public class TreemanAction : LegacyEnemyAction {
     public int idx;
 
     public TreemanAction(CharObject parent) : base(parent) {
@@ -49,7 +41,7 @@
     public override void ExecuteAction() {
       switch (idx) {
         case 0:
-          ExecuteAttackAction(6);
+          instance.battleContext.ExecuteAction(BattleContext.CommonAction.enemy_attack(parent, baseDmg: 6));
           break;
         default:
           break;

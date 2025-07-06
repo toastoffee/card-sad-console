@@ -1,3 +1,5 @@
+using static BattleContext;
+
 public class CardObjcet {
   public CardModel cardModel;
   public string name => cardModel.modelId;
@@ -14,19 +16,76 @@ public class CardObjcet {
   }
 }
 
+public class CharPropSchema : FloatPropSchema<CharProp, CharPropSchema> {
+  public class PropField : FloatField<CharProp> {
+    public PropField(Func<CharProp, float, CharProp> setter, Func<CharProp, float> getter) : base(setter, getter) { }
+  }
+  public PropField maxHp = new PropField(
+    (src, value) => {
+      src.maxHp = (int)value;
+      return src;
+    },
+    src => src.maxHp
+  );
+  public PropField atk = new PropField(
+    (src, value) => {
+      src.atk = (int)value;
+      return src;
+    },
+    src => src.atk
+  );
+  public PropField def = new PropField(
+    (src, value) => {
+      src.def = (int)value;
+      return src;
+    },
+    src => src.def
+  );
+  public PropField speed = new PropField(
+    (src, value) => {
+      src.speed = (int)value;
+      return src;
+    },
+    src => src.speed
+  );
+  public PropField maxJourney = new PropField(
+    (src, value) => {
+      src.maxJourney = (int)value;
+      return src;
+    },
+    src => src.maxJourney
+  );
+}
+
 public class CharObject {
+  public class Buff {
+    public BuffId buffId;
+    public int stack;
+    public int livedTurn;
+  }
+
   public string name;
   public int hp;
-  public int maxHp;
   public int shield;
-  public int def;
-  public int atk;
-  public int speed;
   public int journey;
-  public int maxJourney;
-  public RogueBattleState.EnemyAction enemyAction;
+  public int maxHp => finalProp.maxHp;
+  public int def => finalProp.def;
+  public int atk => finalProp.atk;
+  public int speed => finalProp.speed;
+  public int maxJourney => finalProp.maxJourney;
+  public RogueBattleState.LegacyEnemyAction enemyAction;
+  public List<Buff> buffs = new List<Buff>() {
+    new Buff {
+      buffId = BuffId.攻击力,
+      stack = 6,
+    }
+  };
 
-  public PlayerProp playerProp => new PlayerProp {
+  public CharProp baseProp;
+  public List<CharPropSchema.Modifier> modifiers = new();
+  public CharProp finalProp;
+
+  public CharProp playerProp => new CharProp {
     maxHp = maxHp,
     def = def,
     atk = atk,
@@ -34,13 +93,13 @@ public class CharObject {
     maxJourney = maxJourney,
   };
 
-  public void LoadFromPlayerProp(int hp, PlayerProp prop) {
+  public void LoadFromPlayerProp(int hp, CharProp prop) {
     this.hp = hp;
-    maxHp = prop.maxHp;
-    def = prop.def;
-    atk = prop.atk;
-    speed = prop.speed;
-    maxJourney = prop.maxJourney;
+    baseProp = prop;
+  }
+
+  public void UpdateProp() {
+    finalProp = CharPropSchema.ApplyModifers(baseProp, modifiers);
   }
 }
 
@@ -62,28 +121,29 @@ public enum CardType {
 public enum CardTag {
   STICKY,//保留
   CONSIST,//固有
+  FRAGILE,//消耗
 }
 
 public class GearObject {
   public GearModel gearModel;
   public string name => gearModel.modelId.Replace('_', ' ');
   public List<GearModel.CardRecord> cards => gearModel.cards;
-  public PlayerProp prop => gearModel.baseProp;
+  public CharProp prop => gearModel.baseProp;
 
   public GearObject(string modelId) {
     gearModel = AutoModelTable<GearModel>.Read(modelId);
   }
 }
 
-public struct PlayerProp {
+public struct CharProp {
   public int maxHp;
   public int def;
   public int atk;
   public int speed;
   public int maxJourney;
 
-  public PlayerProp Add(PlayerProp other) {
-    var ret = new PlayerProp() {
+  public CharProp Add(CharProp other) {
+    var ret = new CharProp() {
       maxHp = this.maxHp + other.maxHp,
       def = this.def + other.def,
       atk = this.atk + other.atk,
@@ -91,6 +151,27 @@ public struct PlayerProp {
       maxJourney = this.maxJourney + other.maxJourney
     };
     return ret;
+  }
+
+  public void ConvertToAddModifiers(List<CharPropSchema.Modifier> modifiers) {
+    if (modifiers == null) {
+      return;
+    }
+    if (maxHp != 0) {
+      modifiers.Add(new CharPropSchema.Modifier(schema => schema.maxHp) { type = ModifierType.Add, value = maxHp });
+    }
+    if (def != 0) {
+      modifiers.Add(new CharPropSchema.Modifier(schema => schema.def) { type = ModifierType.Add, value = def });
+    }
+    if (atk != 0) {
+      modifiers.Add(new CharPropSchema.Modifier(schema => schema.atk) { type = ModifierType.Add, value = atk });
+    }
+    if (speed != 0) {
+      modifiers.Add(new CharPropSchema.Modifier(schema => schema.speed) { type = ModifierType.Add, value = speed });
+    }
+    if (maxJourney != 0) {
+      modifiers.Add(new CharPropSchema.Modifier(schema => schema.maxJourney) { type = ModifierType.Add, value = maxJourney });
+    }
   }
 }
 
@@ -137,13 +218,8 @@ public class RoguePlayerData {
     }
   }
 
-  public PlayerProp baseProp;
-  public PlayerProp gearProp;
-  public PlayerProp totalProp {
-    get {
-      return baseProp.Add(gearProp);
-    }
-  }
+  public CharProp baseProp;
+  public CharProp finalProp_statsOnly;
 
   public List<EquipmentSlot> equipmentSlots = new List<EquipmentSlot>();
   public int hp;
@@ -151,7 +227,7 @@ public class RoguePlayerData {
 
   private RoguePlayerData() {
     // 初始化基础属性
-    baseProp = new PlayerProp {
+    baseProp = new CharProp {
       maxHp = 70,
       def = 0,
       atk = 0,
@@ -159,9 +235,9 @@ public class RoguePlayerData {
     };
     // 初始化所有装备槽位
     InitializeEquipmentSlots();
-    UpdateGearProp();
+    UpdateStatsProp();
 
-    hp = totalProp.maxHp;
+    hp = baseProp.maxHp;
   }
 
   private void InitializeEquipmentSlots() {
@@ -174,15 +250,12 @@ public class RoguePlayerData {
     equipmentSlots.Add(new EquipmentSlot(GearSlot.MAGIC, "Magic"));
   }
 
-  // 更新装备属性
-  public void UpdateGearProp() {
-    gearProp = new PlayerProp(); // 重置装备属性
-
+  public void UpdateStatsProp() {
+    var modifierList = CharPropSchema.NewModifierList();
     foreach (var slot in equipmentSlots) {
-      if (slot.HasEquipment) {
-        gearProp = gearProp.Add(slot.equippedGear.prop);
-      }
+      slot.equippedGear?.prop.ConvertToAddModifiers(modifierList);
     }
+    finalProp_statsOnly = CharPropSchema.ApplyModifers(baseProp, modifierList);
   }
 
   // 装备管理方法
@@ -193,7 +266,7 @@ public class RoguePlayerData {
 
     if (compatibleSlot != null) {
       compatibleSlot.EquipGear(gear);
-      UpdateGearProp();
+      UpdateStatsProp();
       return true;
     }
     return false;
@@ -204,7 +277,7 @@ public class RoguePlayerData {
     if (slot != null && slot.CanEquip(gear)) {
       slot.UnequipGear(); // 先卸下旧装备
       slot.EquipGear(gear);
-      UpdateGearProp();
+      UpdateStatsProp();
       return true;
     }
     return false;
@@ -214,7 +287,7 @@ public class RoguePlayerData {
     var slot = equipmentSlots.FirstOrDefault(s => s.slotType == slotType);
     if (slot != null && slot.HasEquipment) {
       var gear = slot.UnequipGear();
-      UpdateGearProp();
+      UpdateStatsProp();
       return gear;
     }
     return null;
@@ -229,7 +302,7 @@ public class RoguePlayerData {
     foreach (var slot in equipmentSlots) {
       slot.UnequipGear();
     }
-    UpdateGearProp();
+    UpdateStatsProp();
   }
 
   // 静态方法重置单例（主要用于测试或重新开始游戏）

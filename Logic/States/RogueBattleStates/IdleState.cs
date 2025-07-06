@@ -19,7 +19,7 @@ public class IdleState : LiteState {
 
   public void OnTick() {
     if (battleContext == null) return;
-
+    battleContext.RefreshProps();
     if (GameInput.Read(GameInput.Type.CARD, out var input)) {
       int idx = input.intValue;
       if (idx >= 0 && idx < battleContext.tokens.Count) {

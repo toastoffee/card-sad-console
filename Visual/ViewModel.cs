@@ -32,7 +32,8 @@ public class ViewModel {
   public int playerShield; // 添加玩家护盾值
   public int journey;
   public int maxJourney;
-  public PlayerProp playerProp; // 添加玩家总属性
+  public List<(string buff, int stack)> playerBuffs = new() { };
+  public CharProp playerProp; // 添加玩家总属性
   public GameDisplayStateType displayState; // 添加状态类型标识
   public PopupDisplayType popupState;
   public int playerMoney;
@@ -60,11 +61,18 @@ public class EnemyViewModel {
   public string name;
   public int hp;
   public int maxHp;
+  public int shield;
   public string intention;
+  public List<(string buff, int stack)> buffs = new() { };
 }
 
 public class CardViewModel {
   public string name;
   public int cost;
   public string description;
+  public string header;
+  public List<string> tags = new();
+  public Color tagColor = Color.White;
+  public Color descColor;
+  public Color titleColor;
 }

@@ -9,7 +9,7 @@ internal class BattleView {
   private ControlHost _controls;
   private ControlHost _handCardControls;
 
-  // Battle×´Ì¬×¨ÓÃ×é¼ş
+  // BattleçŠ¶æ€ä¸“ç”¨ç»„ä»¶
   private PanelText turnText;
   private PanelText playerHealthText;
   private PanelText playerEnergyText;
@@ -21,16 +21,17 @@ internal class BattleView {
   private ButtonBox endTurnButton;
   private ButtonBox skipBattleButton;
   private ProgressBar speedProgressBar;
+  private List<PanelText> playerBuffTexts = new List<PanelText>();
 
   public BattleView(ScreenSurface surface, ScreenSurface handCardSurface) {
     _surface = surface;
     _handCardSurface = handCardSurface;
 
-    // ÎªÖ÷±íÃæ´´½¨ControlHost
+    // ä¸ºä¸»è¡¨é¢åˆ›å»ºControlHost
     _controls = new ControlHost();
     _surface.SadComponents.Add(_controls);
 
-    // ÎªÊÖÅÆ±íÃæ´´½¨¶ÀÁ¢µÄControlHost
+    // ä¸ºæ‰‹ç‰Œè¡¨é¢åˆ›å»ºç‹¬ç«‹çš„ControlHost
     _handCardControls = new ControlHost();
     _handCardSurface.SadComponents.Add(_handCardControls);
 
@@ -38,7 +39,7 @@ internal class BattleView {
   }
 
   private void InitializeComponents() {
-    // ³õÊ¼»¯»ØºÏ½áÊø°´Å¥
+    // åˆå§‹åŒ–å›åˆç»“æŸæŒ‰é’®
     int buttonWidth = 12;
     int buttonHeight = 3;
     int buttonX = _surface.Width - buttonWidth - 2;
@@ -80,18 +81,18 @@ internal class BattleView {
   }
 
   public void Render(ViewModel viewModel) {
-    // ÏÈ»æÖÆÖ÷ÓÎÏ·ÇøÓòµÄ±ß¿ò
+    // å…ˆç»˜åˆ¶ä¸»æ¸¸æˆåŒºåŸŸçš„è¾¹æ¡†
     _surface.DrawBox(new Rectangle(0, 0, _surface.Width, _surface.Height),
       ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
         new ColoredGlyph(Color.White, Color.Black)));
 
-    // äÖÈ¾Íæ¼Ò×´Ì¬
+    // æ¸²æŸ“ç©å®¶çŠ¶æ€
     RenderPlayerStatus(viewModel);
 
-    // äÖÈ¾µĞÈË
+    // æ¸²æŸ“æ•Œäºº
     RenderEnemies(viewModel);
 
-    // äÖÈ¾¿¨ÅÆ
+    // æ¸²æŸ“å¡ç‰Œ
     RenderCards(viewModel);
 
     endTurnButton.IsVisible = true;
@@ -101,13 +102,13 @@ internal class BattleView {
   }
 
   private void RenderPlayerStatus(ViewModel viewModel) {
-    // ¼ÆËã×óÏÂ½ÇÎ»ÖÃ
-    int bottomY = _surface.Height - 4; // ¾àÀëµ×²¿4¸öµ¥Î»
-    int upperY = bottomY - 4; // ÉÏ·½Ò»ĞĞ£¬¼ä¾à1£¨3¸ß¶È+1¼ä¾à£©
-    int startX = 2; // ×ó±ß¾à2¸öµ¥Î»
-    int gap = 1; // ¿òÓë¿òÖ®¼äµÄ¼ä¾à
+    // è®¡ç®—å·¦ä¸‹è§’ä½ç½®
+    int bottomY = _surface.Height - 4; // è·ç¦»åº•éƒ¨4ä¸ªå•ä½
+    int upperY = bottomY - 4; // ä¸Šæ–¹ä¸€è¡Œï¼Œé—´è·1ï¼ˆ3é«˜åº¦+1é—´è·ï¼‰
+    int startX = 2; // å·¦è¾¹è·2ä¸ªå•ä½
+    int gap = 1; // æ¡†ä¸æ¡†ä¹‹é—´çš„é—´è·
 
-    // ¸÷¸ö×´Ì¬¿òµÄ¿í¶È
+    // å„ä¸ªçŠ¶æ€æ¡†çš„å®½åº¦
     int turnWidth = 6;
     int energyWidth = 10;
     int hpWidth = 10;
@@ -115,56 +116,56 @@ internal class BattleView {
     int deckWidth = 8;
     int discardWidth = 8;
 
-    // äÖÈ¾ÉÏ·½ĞĞ£º¿¨ÅÆ¶ÑĞÅÏ¢
+    // æ¸²æŸ“ä¸Šæ–¹è¡Œï¼šå¡ç‰Œå †ä¿¡æ¯
     int upperCurrentX = startX;
 
-    // ³éÅÆ¶Ñ
+    // æŠ½ç‰Œå †
     deckCountText = new PanelText(new Point(upperCurrentX, upperY), "Deck", deckWidth, 3, Color.Green, _surface);
     deckCountText.alignType = PanelText.AlignType.Center;
     deckCountText.contentColor = viewModel.deckCount > 0 ? Color.White : Color.Gray;
     deckCountText.content = viewModel.deckCount.ToString();
 
-    // ÆúÅÆ¶Ñ
+    // å¼ƒç‰Œå †
     upperCurrentX += deckWidth + gap;
     discardCountText = new PanelText(new Point(upperCurrentX, upperY), "Discard", discardWidth, 3, Color.Purple, _surface);
     discardCountText.alignType = PanelText.AlignType.Center;
     discardCountText.contentColor = viewModel.discardCount > 0 ? Color.White : Color.Gray;
     discardCountText.content = viewModel.discardCount.ToString();
 
-    // äÖÈ¾ÏÂ·½ĞĞ£ºÏÖÓĞ×´Ì¬ĞÅÏ¢
+    // æ¸²æŸ“ä¸‹æ–¹è¡Œï¼šç°æœ‰çŠ¶æ€ä¿¡æ¯
     int currentX = startX;
 
-    // »ØºÏÊı
+    // å›åˆæ•°
     turnText = new PanelText(new Point(currentX, bottomY), "Turn", turnWidth, 3, Color.Wheat, _surface);
     turnText.alignType = PanelText.AlignType.Center;
     turnText.content = viewModel.turn.ToString();
 
-    // ÄÜÁ¿
+    // èƒ½é‡
     currentX += turnWidth + gap;
     playerEnergyText = new PanelText(new Point(currentX, bottomY), "Energy", energyWidth, 3, Color.Orange, _surface);
     playerEnergyText.alignType = PanelText.AlignType.Center;
     playerEnergyText.content = $"{viewModel.eng}/{viewModel.maxEng}";
 
-    // ÑªÁ¿
+    // è¡€é‡
     currentX += energyWidth + gap;
     playerHealthText = new PanelText(new Point(currentX, bottomY), "HP", hpWidth, 3, Color.Red, _surface);
     playerHealthText.alignType = PanelText.AlignType.Center;
     playerHealthText.content = $"{viewModel.playerHp}/{viewModel.maxPlayerHp}";
 
-    // »¤¶Ü£¨Ö»ÓĞ´óÓÚ0Ê±²ÅÏÔÊ¾£©
+    // æŠ¤ç›¾ï¼ˆåªæœ‰å¤§äº0æ—¶æ‰æ˜¾ç¤ºï¼‰
     if (viewModel.playerShield > 0) {
       currentX += hpWidth + gap;
       if (playerShieldText == null) {
         playerShieldText = new PanelText(new Point(currentX, bottomY), "Shield", shieldWidth, 3, Color.LightBlue, _surface);
         playerShieldText.alignType = PanelText.AlignType.Center;
       } else {
-        // ¸üĞÂ»¤¶Ü¿òµÄÎ»ÖÃ£¨ÒòÎªËü¿ÉÄÜ»á¶¯Ì¬ÏÔÊ¾/Òş²Ø£©
+        // æ›´æ–°æŠ¤ç›¾æ¡†çš„ä½ç½®ï¼ˆå› ä¸ºå®ƒå¯èƒ½ä¼šåŠ¨æ€æ˜¾ç¤º/éšè—ï¼‰
         playerShieldText.SetPosition(new Point(currentX, bottomY));
       }
       playerShieldText.content = viewModel.playerShield.ToString();
     }
 
-    // ½ø¶ÈÌõ
+    // è¿›åº¦æ¡
     _surface.DrawBox(new Rectangle(speedProgressBar.Position.X - 1, speedProgressBar.Position.Y - 1, speedProgressBar.Width + 2, speedProgressBar.Height + 2),
       ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
         new ColoredGlyph(Color.AnsiYellow, Color.Black)));
@@ -173,6 +174,25 @@ internal class BattleView {
     speedProgressBar.Progress = prog;
 
     _surface.Print(speedProgressBar.Position.X, speedProgressBar.Position.Y - 1, $"Draw Card: {viewModel.journey}/{viewModel.maxJourney}", Color.AnsiYellow);
+
+    var playerBuffAnchor = new Point(_surface.Width - 2, bottomY - 4);
+    while (playerBuffTexts.Count < viewModel.playerBuffs.Count) {
+      int index = playerBuffTexts.Count;
+      int yPosition = playerBuffAnchor.Y;
+      playerBuffTexts.Add(new PanelText(new Point(playerBuffAnchor.X + 13 + index * 11, yPosition), "Buff", 11, 3, Color.LightGray, _surface));
+    }
+
+    var xPosition = playerBuffAnchor.X;
+    for (int i = 0; i < viewModel.playerBuffs.Count; i++) {
+      var buff = viewModel.playerBuffs[i];
+      var buffText = playerBuffTexts[i];
+      var content = $"{buff.buff} | {buff.stack}";
+      var width = content.Length + 2; // +4 for padding
+      xPosition -= width;
+      buffText.SetSize(width, 3);
+      buffText.SetPosition(new Point(xPosition, playerBuffAnchor.Y));
+      buffText.content = content;
+    }
   }
 
   private ProgressBar GetNewSpeedProgressBar() {
@@ -185,13 +205,13 @@ internal class BattleView {
   private void RenderEnemies(ViewModel viewModel) {
     while (enemyViews.Count < viewModel.enemies.Count) {
       int index = enemyViews.Count;
-      int yPosition = 7;
+      int yPosition = 1;
 
       for (int j = 0; j < index; j++) {
         yPosition += enemyViews[j].TotalHeight;
       }
 
-      enemyViews.Add(new EnemyView(50, yPosition, _surface));
+      enemyViews.Add(new EnemyView(1, yPosition, _surface));
     }
 
     for (int i = 0; i < viewModel.enemies.Count; i++) {
@@ -200,19 +220,19 @@ internal class BattleView {
   }
 
   private void RenderCards(ViewModel viewModel) {
-    // ÏÈ»æÖÆÊÖÅÆÇøÓòµÄ±ß¿ò
+    // å…ˆç»˜åˆ¶æ‰‹ç‰ŒåŒºåŸŸçš„è¾¹æ¡†
     int totalWidth = _handCardSurface.Width;
     int totalHeight = _handCardSurface.Height;
 
-    // »æÖÆÊÖÅÆÇøÓò±ß¿ò
+    // ç»˜åˆ¶æ‰‹ç‰ŒåŒºåŸŸè¾¹æ¡†
     _handCardSurface.DrawBox(new Rectangle(0, 0, totalWidth, totalHeight),
       ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin,
         new ColoredGlyph(Color.White, Color.Black)));
 
-    // Ìí¼Ó"Hand Cards"±êÌâ
+    // æ·»åŠ "Hand Cards"æ ‡é¢˜
     _handCardSurface.Print(2, 0, "Hand Cards", Color.Yellow);
 
-    // ¼ÆËã¾ÓÖĞµÄÆğÊ¼Î»ÖÃ
+    // è®¡ç®—å±…ä¸­çš„èµ·å§‹ä½ç½®
     int cardCount = viewModel.handCards.Count;
 
     int cardWidth = 17; // CardView.TotalWidth
@@ -220,26 +240,26 @@ internal class BattleView {
     int totalCardsWidth = cardCount * cardWidth + (cardCount - 1) * cardSpacing;
     int startX = (totalWidth - totalCardsWidth) / 2;
 
-    // È·±£ÓĞ×ã¹»µÄCardView
+    // ç¡®ä¿æœ‰è¶³å¤Ÿçš„CardView
     while (cardViews.Count < cardCount) {
       int index = cardViews.Count;
       int xPosition = startX + index * (cardWidth + cardSpacing);
-      int yPosition = 2; // ´Ó¶¥²¿¿ªÊ¼£¬Áô2¸öµ¥Î»¼ä¾à
+      int yPosition = 2; // ä»é¡¶éƒ¨å¼€å§‹ï¼Œç•™2ä¸ªå•ä½é—´è·
 
       cardViews.Add(new CardView(xPosition, yPosition, _handCardSurface, _handCardControls));
     }
 
-    // ¸üĞÂÏÖÓĞCardViewµÄÎ»ÖÃ²¢äÖÈ¾
+    // æ›´æ–°ç°æœ‰CardViewçš„ä½ç½®å¹¶æ¸²æŸ“
     for (int i = 0; i < cardViews.Count; i++) {
       if (i < cardCount) {
-        // ÖØĞÂ¼ÆËãÎ»ÖÃÒÔÈ·±£¾ÓÖĞ
+        // é‡æ–°è®¡ç®—ä½ç½®ä»¥ç¡®ä¿å±…ä¸­
         int xPosition = startX + i * (cardWidth + cardSpacing);
         cardViews[i].UpdatePosition(xPosition, 2);
 
         var cardModel = viewModel.handCards[i];
         cardViews[i].Render(i, cardModel, true);
       } else {
-        // Òş²Ø¶àÓàµÄCardView
+        // éšè—å¤šä½™çš„CardView
         cardViews[i].Render(i, null, false);
       }
     }
@@ -251,10 +271,12 @@ internal class EnemyView {
   public PanelText enemyNameText;
   public PanelText enemyHealthText;
   public PanelText enemyIntentionText;
+  public PanelText shieldText;
   private ScreenSurface mainSurface;
+  private List<PanelText> buffTexts = new List<PanelText>();
 
-  // ¼ÆËãÊÓÍ¼×Ü¸ß¶ÈµÄÊôĞÔ
-  public int TotalHeight => 11; // Ãû³Æ(3) + ¼ä¾à(0) + ÉúÃüÖµ(3) + ¼ä¾à(0) + ÒâÍ¼(3) + µ×²¿¼ä¾à(2)
+  // è®¡ç®—è§†å›¾æ€»é«˜åº¦çš„å±æ€§
+  public int TotalHeight => 10;
 
   public EnemyView(int x, int y, ScreenSurface surface) {
     anchor = (x, y);
@@ -278,7 +300,34 @@ internal class EnemyView {
       enemyIntentionText = new PanelText(new Point(anchor.x, anchor.y + 6), "Intention", 30, 3, Color.Yellow, mainSurface);
       enemyIntentionText.alignType = PanelText.AlignType.Center;
     }
+    enemyIntentionText.SetSize(viewModel.intention.Length + 4, 3);
     enemyIntentionText.content = viewModel.intention;
+
+    if (viewModel.shield > 0) {
+      if (shieldText == null) {
+        shieldText = new PanelText(new Point(anchor.x + 13, anchor.y + 3), "Shield", 9, 3, Color.LightBlue, mainSurface);
+        shieldText.alignType = PanelText.AlignType.Center;
+      }
+      shieldText.content = viewModel.shield.ToString();
+    }
+
+    while (buffTexts.Count < viewModel.buffs.Count) {
+      int index = buffTexts.Count;
+      int yPosition = anchor.y;
+      buffTexts.Add(new PanelText(new Point(anchor.x + 13 + index * 11, yPosition), "Buff", 11, 3, Color.LightGray, mainSurface));
+    }
+
+    var xPosition = anchor.x + 13;
+    for (int i = 0; i < viewModel.buffs.Count; i++) {
+      var buff = viewModel.buffs[i];
+      var buffText = buffTexts[i];
+      var content = $"{buff.buff} | {buff.stack}";
+      var width = content.Length + 2; // +4 for padding
+      buffText.SetSize(width, 3);
+      buffText.SetPosition(new Point(xPosition, anchor.y));
+      buffText.content = content;
+      xPosition += width;
+    }
   }
 }
 
@@ -289,7 +338,7 @@ internal class CardView {
   public PanelText descriptionText;
   public int idx;
   private ScreenSurface mainSurface;
-  private SadConsole.UI.Controls.ButtonBox playButton;
+  private ButtonBox playButton;
 
   public int TotalWidth => 17;
 
@@ -297,25 +346,25 @@ internal class CardView {
     anchor = (x, y);
     mainSurface = surface;
 
-    // ³õÊ¼»¯°´Å¥ - °´Å¥¿í¶ÈÎª17£¬¸ß¶ÈÎª5£¬Î»ÖÃÔÚ¿¨ÅÆÃèÊö¿òµÄÏÂ·½
-    playButton = new ButtonBox(17, 5) {
-      Position = new Point(anchor.x, anchor.y + 11), // °´Å¥Î»ÖÃ
-      Text = "Play" // °´Å¥ÎÄ±¾
+    // åˆå§‹åŒ–æŒ‰é’® - æŒ‰é’®å®½åº¦ä¸º17ï¼Œé«˜åº¦ä¸º5ï¼Œä½ç½®åœ¨å¡ç‰Œæè¿°æ¡†çš„ä¸‹æ–¹
+    playButton = new ButtonBox(17, 3) {
+      Position = new Point(anchor.x, anchor.y + 15), // æŒ‰é’®ä½ç½®
+      Text = "Play", // æŒ‰é’®æ–‡æœ¬
     };
 
-    // °ó¶¨°´Å¥µã»÷ÊÂ¼ş
+    // ç»‘å®šæŒ‰é’®ç‚¹å‡»äº‹ä»¶
     playButton.Click += PlayButton_Click;
 
     controls.Add(playButton);
   }
 
-  // Ìí¼Ó¸üĞÂÎ»ÖÃµÄ·½·¨
+  // æ·»åŠ æ›´æ–°ä½ç½®çš„æ–¹æ³•
   public void UpdatePosition(int x, int y) {
     anchor = (x, y);
 
-    // ¸üĞÂ°´Å¥Î»ÖÃ
-    playButton.Position = new Point(anchor.x, anchor.y + 11);
-    // ¸üĞÂÎÄ±¾Î»ÖÃ
+    // æ›´æ–°æŒ‰é’®ä½ç½®
+    playButton.Position = new Point(anchor.x, anchor.y + 15);
+    // æ›´æ–°æ–‡æœ¬ä½ç½®
     if (cardNameText != null) {
       cardNameText.SetPosition(new Point(anchor.x, anchor.y));
     }
@@ -327,13 +376,13 @@ internal class CardView {
     }
   }
 
-  // °´Å¥µã»÷ÊÂ¼ş´¦Àí·½·¨
+  // æŒ‰é’®ç‚¹å‡»äº‹ä»¶å¤„ç†æ–¹æ³•
   private void PlayButton_Click(object sender, EventArgs e) {
     GameInput.Set(GameInput.Type.CARD, new InputValue {
       intValue = idx,
     });
 
-    playButton.IsEnabled = false; // ÁÙÊ±½ûÓÃ°´Å¥±ÜÃâÁ¬µã
+    playButton.IsEnabled = false; // ä¸´æ—¶ç¦ç”¨æŒ‰é’®é¿å…è¿ç‚¹
     System.Threading.Tasks.Task.Delay(200).ContinueWith(t => {
       playButton.IsEnabled = true;
     });
@@ -348,16 +397,18 @@ internal class CardView {
       return;
     }
 
-    // È·±£°´Å¥ÔÚ ControlHost ÖĞ
+    // ç¡®ä¿æŒ‰é’®åœ¨ ControlHost ä¸­
     if (playButton.Parent == null) {
       ((ControlHost)mainSurface.SadComponents.OfType<ControlHost>().First()).Add(playButton);
     }
 
-    // ÆäÓàäÖÈ¾Âß¼­...
+    // å…¶ä½™æ¸²æŸ“é€»è¾‘...
     if (cardNameText == null) {
-      cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, Color.AnsiRedBright, mainSurface);
+      cardNameText = new PanelText(new Point(anchor.x, anchor.y), "card", 12, 3, viewModel.titleColor, mainSurface);
       cardNameText.alignType = PanelText.AlignType.Center;
     }
+    cardNameText.header = viewModel.header;
+    cardNameText.color = viewModel.titleColor;
     cardNameText.content = viewModel.name;
 
     if (costText == null) {
@@ -368,12 +419,18 @@ internal class CardView {
     costText.content = viewModel.cost.ToString();
 
     if (descriptionText == null) {
-      descriptionText = new PanelText(new Point(anchor.x, anchor.y + 3), "desc", 17, 8, Color.Wheat, mainSurface);
+      descriptionText = new PanelText(new Point(anchor.x, anchor.y + 3), "desc", 17, 12, viewModel.descColor, mainSurface);
       descriptionText.alignType = PanelText.AlignType.Left;
     }
+    descriptionText.color = viewModel.descColor;
     descriptionText.content = viewModel.description;
 
     playButton.Text = $"Play {viewModel.name}";
     playButton.IsVisible = true;
+
+    for (int i = 0; i < viewModel.tags.Count; i++) {
+      var tag = viewModel.tags[i];
+      mainSurface.Print(anchor.x + 1, anchor.y + 13, $"( {tag} )", viewModel.tagColor);
+    }
   }
 }

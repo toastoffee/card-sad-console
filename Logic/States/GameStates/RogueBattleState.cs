@@ -1,4 +1,4 @@
-﻿using static RogueRouteState;
+using static RogueRouteState;
 
 public partial class RogueBattleState : GameState {
 	public static RogueBattleState instance;

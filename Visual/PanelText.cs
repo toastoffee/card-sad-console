@@ -1,4 +1,4 @@
-﻿namespace CardConsole.Visual;
+namespace CardConsole.Visual;
 internal class PanelText {
   public Point position { get; private set; }
 
@@ -49,7 +49,6 @@ internal class PanelText {
   }
 
   public void UpdateVisual() {
-
     canvas.DrawBox(new Rectangle(position.X, position.Y, width, height),
     ShapeParameters.CreateStyledBox(ICellSurface.ConnectedLineThin, new ColoredGlyph(color, Color.Black)));
 
@@ -91,7 +90,7 @@ internal class PanelText {
     }
     if (currentLine.Length > 0)
       lines.Add(currentLine);
-
+    
     return lines;
   }
 }

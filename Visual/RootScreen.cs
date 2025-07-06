@@ -1,4 +1,4 @@
-﻿using SadConsole.Input;
+using SadConsole.Input;
 
 namespace CardConsole.Visual;
 
@@ -30,8 +30,17 @@ internal class RootScreen : ScreenObject {
     return handled;
   }
 
+  private int remainTick = 1;
   public override void Update(TimeSpan delta) {
     base.Update(delta);
+    if (GameInput.isDirty) {
+      remainTick = 3;
+    }
+    if (remainTick <= 0) {
+      return;
+    }
+    remainTick--;
+
     // 更新游戏逻辑
     CardGame.instance.Tick();
     GameInput.Reset();

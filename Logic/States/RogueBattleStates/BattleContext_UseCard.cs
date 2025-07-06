@@ -1,5 +1,4 @@
-﻿public partial class BattleContext {
-
+public partial class BattleContext {
   #region 使用卡牌逻辑
 
   public void PreUseCard(int idx) {
@@ -19,43 +18,29 @@
     }
 
     if (card != null) {
-      Log.Push($"use hand：[{card.cardModel.modelId}]");
       tokens.Remove(card);
     }
 
     mana -= card.cost;
 
-    if (card.cardModel.modelId == nameof(CardDefine.Strike)) {
-      DoDamageToEnemy(0, 6);
-    }
-
-    if (card.cardModel.modelId == nameof(CardDefine.Defend)) {
-      ApplyShieldToPlayer(5);
-    }
-
-    if (card.cardModel.modelId == nameof(CardDefine.Hit)) {
-      DoDamageToEnemy(0, 15);
+    var cardAction = card.cardModel.action;
+    if (cardAction != null) {
+      cardAction.Invoke(this, (action) => {
+        action.invoker = playerCharObj;
+        ExecuteAction(action);
+      });
     }
 
     if (card.cardModel.modelId == nameof(CardDefine.Swap)) {
       UseCard_SWAP();
     }
 
+    if (card.tags.Contains(CardTag.FRAGILE)) {
+      return;
+    }
     yard.Add(card);
   }
 
-  private void DoDamageToEnemy(int idx, int dmg) {
-    var enemy = enemies[idx];
-    DoAttack(new AttackParam {
-      attacker = playerCharObj,
-      deffender = enemy,
-      dmg = dmg,
-    });
-  }
-
-  private void ApplyShieldToPlayer(int shield) {
-    GainShield(playerCharObj, shield);
-  }
 
   private void PreuseCard_SWAP(CardObjcet card) {
     RogueBattleState.instance.GotoCardSelect();

@@ -94,6 +94,9 @@ indent_style=space
 indent_size=2
 tab_width=2
 
+# IDE0028: 简化集合初始化
+dotnet_style_collection_initializer = false
+
 [*.cs]
 indent_style=space
 indent_size=2
@@ -112,3 +115,9 @@ dotnet_diagnostic.CS8603.severity = silent
 # CS8602: 解引用可能出现空引用。
 dotnet_diagnostic.CS8602.severity = silent
 
+
+# CS8622: 参数类型中引用类型的为 Null 性与目标委托不匹配(可能是由于为 Null 性特性)。
+dotnet_diagnostic.CS8622.severity = none
+
+# CS8625: 无法将 null 字面量转换为非 null 的引用类型。
+dotnet_diagnostic.CS8625.severity = none

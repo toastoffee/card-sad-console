@@ -67,6 +67,7 @@ public static class EnemyActionDefine {
         enqueue(new ActionDescriptor {
           invoker = self,
           funcType = ActionFuncType.ATTACK,
+          target = ActionTarget.PLAYER,
           baseDmg = 8,
         });
       }),
@@ -78,6 +79,7 @@ public static class EnemyActionDefine {
         enqueue(new ActionDescriptor {
           invoker = self,
           funcType = ActionFuncType.ATTACK,
+          target = ActionTarget.PLAYER,
           baseDmg = 8,
         });
       }),
@@ -88,7 +90,7 @@ public static class EnemyActionDefine {
         enqueue(new ActionDescriptor {
           invoker = self,
           funcType = ActionFuncType.GAIN_SHIELD,
-          baseDmg = 8,
+          baseShield = 8,
         });
         enqueue(new ActionDescriptor {
           invoker = self,

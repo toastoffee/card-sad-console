@@ -89,7 +89,7 @@ public static class EnumTrans {
     });
   }
 
-  public static class Impl<T> {
+  public static class Impl<T> where T : notnull {
     public static Dictionary<T, string> dict = new Dictionary<T, string>();
     public static Func<T, string> toStringFunc = null;
     public static void Set(List<KeyValuePair<T, string>> list) {
@@ -102,7 +102,7 @@ public static class EnumTrans {
       Impl<T>.toStringFunc = toStringFunc;
     }
   }
-  public static string Get<T>(T value) {
+  public static string Get<T>(T value) where T : notnull {
     if (Impl<T>.toStringFunc != null) {
       return Impl<T>.toStringFunc(value);
     } else if (Impl<T>.dict != null && Impl<T>.dict.TryGetValue(value, out var ret)) {

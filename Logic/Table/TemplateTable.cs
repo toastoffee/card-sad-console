@@ -70,11 +70,11 @@ public struct AutoModelTable<TValue> {
   }
 }
 
-public class CommonTemplateTable<TKey, TValue> : TemplateTable<TKey, TValue> {
+public class CommonTemplateTable<TKey, TValue> : TemplateTable<TKey, TValue> where TKey : notnull {
   protected override void OnCreateTable(Dictionary<TKey, TValue> dict) { }
 }
 
-public abstract class TemplateTable<TKey, TValue> {
+public abstract class TemplateTable<TKey, TValue> where TKey : notnull {
   protected Dictionary<TKey, TValue> dict = new Dictionary<TKey, TValue>();
   public TValue this[TKey key] {
     get {

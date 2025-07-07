@@ -86,12 +86,6 @@ public class CharObject {
 
   public string enemyIntention;
 
-  public List<Buff> buffs = new List<Buff>() {
-    new Buff {
-      buffId = BuffId.攻击力,
-      stack = 6,
-    }
-  };
   public List<Buff> buffs = new List<Buff>() { };
 
   public CharProp baseProp;
@@ -112,7 +106,17 @@ public class CharObject {
   }
 
   public void UpdateProp() {
+    UpdateModifiers();
+
     finalProp = CharPropSchema.ApplyModifers(baseProp, modifiers);
+  }
+
+  private void UpdateModifiers() {
+    modifiers.Clear();
+    foreach (var buff in buffs) {
+      var modifier = buff.ToModifier();
+      if(modifier != null) modifiers.Add(modifier);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,9 +29,9 @@ partial class BattleContext {
     public ActionTarget target;
     public BuffId addBuffId;
     public int baseDmg;
-    public float ratioDmg;
+    public float ratioDmg = 1.0f;
     public int baseShield;
-    public float ratioShield;
+    public float ratioShield = 1.0f;
     public int buff_stack_0;
   }
 
@@ -44,7 +45,7 @@ partial class BattleContext {
         _ExecuteAttackAction(action, targets);
         break;
       case ActionFuncType.NON_ATK_DMG:
-        _ExecuteAttackAction(action, targets); //暂时使用攻击逻辑处理非攻击伤害，区分是为了避免反击buff的嵌套
+        _ExecuteCauseDamageAction(action, targets); //暂时使用攻击逻辑处理非攻击伤害，区分是为了避免反击buff的嵌套
         break;
       case ActionFuncType.GAIN_SHIELD:
         _ExcuteGainShieldAction(action, targets);
@@ -64,7 +65,43 @@ partial class BattleContext {
     foreach (var target in targets) {
       var attacker = action.invoker;
 
+
+      // handle attack action
       var dmg = action.baseDmg + (int)(attacker.atk * action.ratioDmg);
+
+      var shieldDmg = (int)MathF.Min(dmg, target.shield);
+      target.shield -= shieldDmg;
+      target.hp -= dmg - shieldDmg;
+
+
+      // handle been attacked action
+      _HandleBeenAttackedAction(action, target, dmg);
+
+      Log.Push($"[{attacker.name}] => [{target.name}]  -[{dmg}]");
+    }
+  }
+
+  private void _HandleBeenAttackedAction(ActionDescriptor action, CharObject target, int dmgCaused) {
+    var buff = target.buffs.TryGetBuff(BuffId.防守反击);
+    if (buff != null) {
+      // fight back if has shield left, cause damage equals fightback stack
+      if (target.shield > 0) {
+        ExecuteAction(new ActionDescriptor {
+          invoker = action.invoker,
+          funcType = ActionFuncType.NON_ATK_DMG,
+          target = ActionTarget.PLAYER,
+          baseDmg = buff.stack,
+        });
+        Log.Push($"[{action.invoker.name}] fight back (stack = {buff.stack})!");
+      }
+
+    }
+  }
+
+  private void _ExecuteCauseDamageAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
+    foreach (var target in targets) {
+      var attacker = action.invoker;
+      var dmg = action.baseDmg;
 
       var shieldDmg = (int)MathF.Min(dmg, target.shield);
       target.shield -= shieldDmg;
@@ -73,6 +110,7 @@ partial class BattleContext {
       Log.Push($"[{attacker.name}] => [{target.name}]  -[{dmg}]");
     }
   }
+
 
   private void _ExcuteGainShieldAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
     foreach (var target in targets) {
@@ -88,8 +126,14 @@ partial class BattleContext {
       stack = action.buff_stack_0,
     };
     foreach (var target in targets) {
-      target.buffs.Add(buff);
+      AddOrMergeBuff(target.buffs, buff);
     }
+  }
+
+  private void AddOrMergeBuff(List<CharObject.Buff> buffs, CharObject.Buff newBuff) {
+    var buffToMerge = buffs.FirstOrDefault(buff => buff.buffId == newBuff.buffId);
+    if (buffToMerge != null) buffToMerge.stack += newBuff.stack;
+    else buffs.Add(newBuff);
   }
 
   private IEnumerable<CharObject> FindTarget(ActionDescriptor action) {
@@ -148,7 +192,6 @@ partial class BattleContext {
     string ret = "";
     foreach (var target in FindTarget(action)) {
       var deltaShield = action.baseShield + (int)(target.def * action.ratioShield);
-      target.shield += deltaShield;
       ret += $"make {target.name} gain {deltaShield} shield,";
     }
 

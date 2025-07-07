@@ -20,34 +20,63 @@ public class EnemyAction {
   public EnemyActionHandler actionHandler;
 }
 
-public class EnmeyActionModel {
+public class EnemyActionModel {
   public string modelId;
   public List<EnemyAction> actions = new();
-  public Func<EnemyContext, IEnumerator<EnemyActionTag>> actionSelector;
+  public Func<EnemyContext, EnemyActionTag> actionSelector;
+
+  public EnemyAction this[EnemyActionTag tag] {
+    get {
+      var action = actions.FirstOrDefault(action => action.tag == tag);
+
+      return action;
+    }
+    set {
+      var idx = actions.FindIndex(action => action.tag == tag);
+      if (idx >= 0 && idx < actions.Count) {
+        actions[idx] = value;
+      }else {
+        throw new Exception($"妹有找到：{tag.GetType().Name}");
+      }
+    }
+  }
 }
 
-[AutoModelTable(typeof(EnmeyActionModel))]
+[AutoModelTable(typeof(EnemyActionModel))]
 public static class EnemyActionDefine {
-  public static EnmeyActionModel Bandit => new EnmeyActionModel {
-    modelId = nameof(Bandit),
-    actions = BanditAtions(),
-    actionSelector = BanditActionSelector,
-  };
-  public static List<EnemyAction> BanditAtions() {
+  //public static EnemyActionModel Bandit => new EnemyActionModel {
+  //  modelId = nameof(Bandit),
+  //  actions = BanditActions(),
+  //  actionSelector = BanditActionSelector,
+  //};
+  
+
+  public static EnemyActionModel CreateBandit(CharObject self) {
+    return new EnemyActionModel {
+      modelId = "Bandit",
+      actions = BanditActions(self),
+      actionSelector = BanditActionSelector,
+    };
+  }
+
+  public static List<EnemyAction> BanditActions(CharObject self) {
     var ret = new List<EnemyAction>();
     ret.Add(new EnemyAction {
       tag = EnemyActionTag.攻击_1,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
+          invoker = self,
           funcType = ActionFuncType.ATTACK,
           baseDmg = 8,
         });
       }),
     });
+    
     ret.Add(new EnemyAction {
       tag = EnemyActionTag.攻击_2,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
+          invoker = self,
           funcType = ActionFuncType.ATTACK,
           baseDmg = 8,
         });
@@ -57,10 +86,12 @@ public static class EnemyActionDefine {
       tag = EnemyActionTag.招架,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
+          invoker = self,
           funcType = ActionFuncType.GAIN_SHIELD,
           baseDmg = 8,
         });
         enqueue(new ActionDescriptor {
+          invoker = self,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.防守反击,
           target = ActionTarget.SELF,
@@ -72,6 +103,7 @@ public static class EnemyActionDefine {
       tag = EnemyActionTag.蓄力,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
+          invoker = self,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.攻击力,
           target = ActionTarget.SELF,
@@ -81,13 +113,23 @@ public static class EnemyActionDefine {
     });
     return ret;
   }
-  public static IEnumerator<EnemyActionTag> BanditActionSelector(EnemyContext ctx) {
-    yield return EnemyActionTag.攻击_1;
-    while (true) {
-      yield return EnemyActionTag.招架;
-      yield return EnemyActionTag.蓄力;
-      yield return EnemyActionTag.攻击_2;
+  public static EnemyActionTag BanditActionSelector(EnemyContext ctx) {
+
+    if(ctx.turnRound == 0) {
+      return EnemyActionTag.攻击_1;
     }
+    else {
+      switch(ctx.turnRound % 3) {
+        case 1:
+          return EnemyActionTag.招架;
+        case 2:
+          return EnemyActionTag.蓄力;
+        case 0:
+          return EnemyActionTag.攻击_2;
+      }
+    }
+
+    return EnemyActionTag.攻击_1;
   }
 }
 

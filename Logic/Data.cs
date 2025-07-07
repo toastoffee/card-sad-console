@@ -73,7 +73,16 @@ public class CharObject {
   public int atk => finalProp.atk;
   public int speed => finalProp.speed;
   public int maxJourney => finalProp.maxJourney;
+
+  [Obsolete]
   public RogueBattleState.LegacyEnemyAction enemyAction;
+
+  public EnemyActionModel enemyActionModel;
+
+  public EnemyContext enemyContext;
+
+  public string enemyIntention;
+
   public List<Buff> buffs = new List<Buff>() {
     new Buff {
       buffId = BuffId.攻击力,

@@ -85,13 +85,17 @@ public partial class BattleContext {
 
   private CharObject GetDefaultEnemys() {
     var enemy = new CharObject {
-      name = "Treeman",
+      name = "Bandit",
       hp = 27,
     };
     enemy.LoadFromPlayerProp(27, new CharProp {
       maxHp = 27,
     });
-    enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
+    //enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
+    
+    enemy.enemyActionModel = EnemyActionDefine.CreateBandit(enemy);
+    enemy.enemyContext = new EnemyContext(enemy, enemies.Count);
+
     return enemy;
   }
 
@@ -203,8 +207,23 @@ public partial class BattleContext {
   #region 战斗逻辑
   public void ExecuteAllEnemyActions() {
     foreach (var enemy in enemies) {
-      enemy.enemyAction.ExecuteAction();
+      ExecuteEnemyAction(enemy);
     }
+
+    // add all enemies battleContext turnRound
+    foreach (var enemy in enemies) {
+      enemy.enemyContext.turnRound++;
+    }
+
+  }
+
+  private void ExecuteEnemyAction(CharObject enemy) {
+    var enemyCtx = enemy.enemyContext;
+    var actionHandler = RogueBattleState.instance.battleContext.ExecuteAction;
+    var actionTag = enemy.enemyActionModel.actionSelector(enemy.enemyContext);
+    var action = enemy.enemyActionModel[actionTag];
+
+    action.actionHandler(enemyCtx, actionHandler);
   }
 
   #endregion
@@ -253,7 +272,10 @@ public partial class BattleContext {
         hp = enemy.hp,
         maxHp = enemy.maxHp,
         shield = enemy.shield,
-        intention = enemy.enemyAction?.ForeshowAction() ?? "unknown",
+
+        //intention = enemy.enemyAction?.ForeshowAction() ?? "unknown",
+
+        intention = ForeShowEnemyIntention(enemy)
       };
       model.buffs.Clear();
       foreach (var buff in enemy.buffs) {
@@ -292,5 +314,19 @@ public partial class BattleContext {
     //覆写信息面板，用战斗内的当前属性显示
     _viewModel.playerProp = playerCharObj.playerProp;
   }
+
+  private string ForeShowEnemyIntention(CharObject enemy) {
+    enemy.enemyIntention = "";
+
+    var enemyCtx = enemy.enemyContext;
+    var actionHandler = RogueBattleState.instance.battleContext.UpdateForeShowAction;
+    var actionTag = enemy.enemyActionModel.actionSelector(enemy.enemyContext);
+    var action = enemy.enemyActionModel[actionTag];
+
+    action.actionHandler(enemyCtx, actionHandler);
+
+    return enemy.enemyIntention;
+  }
+
   #endregion
 }

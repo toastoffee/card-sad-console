@@ -9,11 +9,13 @@ public partial class BattleContext {
   public class EnemyContext {
     public CharObject cha;
     public int idx;
+    public int turnRound;
     public EnemyActionTag nextActionTag;
 
     public EnemyContext(CharObject enemy, int idx) {
       this.cha = enemy;
       this.idx = idx;
+      this.turnRound = 0;
     }
   }
 }

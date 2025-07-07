@@ -33,6 +33,8 @@ partial class BattleContext {
     public int buff_stack_0;
   }
 
+  #region 执行怪味行为逻辑
+
   public void ExecuteAction(ActionDescriptor action) {
     switch (action.funcType) {
       case ActionFuncType.ATTACK:
@@ -90,6 +92,81 @@ partial class BattleContext {
       }
     }
   }
+
+  #endregion
+
+  #region 展示怪物行为逻辑
+
+  public void UpdateForeShowAction(ActionDescriptor action) {
+
+    switch (action.funcType) {
+      case ActionFuncType.ATTACK:
+        _ForeShowAttackAction(action);
+        break;
+      case ActionFuncType.GAIN_SHIELD:
+        _ForeShowGainShieldAction(action);
+        break;
+      case ActionFuncType.ADD_BUFF:
+        _ForeShowAddBuffAction(action);
+        break;
+    }
+  }
+
+  private void _ForeShowAttackAction(ActionDescriptor action) {
+
+    var attacker = action.invoker;
+    var dmg = action.baseDmg + (int)(attacker.atk * action.ratioDmg);
+
+    string targets = "";
+    foreach (var target in FindTarget(action)) {
+      targets += target.name;
+      targets += ",";
+    }
+
+    if (targets.Length > 0) {
+      targets = targets.Substring(0, targets.Length - 1);
+    }
+
+    string ret = $"cause {dmg} to {targets},";
+
+    action.invoker.enemyIntention += ret;
+  }
+
+  private void _ForeShowGainShieldAction(ActionDescriptor action) {
+
+    string ret = "";
+    foreach (var target in FindTarget(action)) {
+      var deltaShield = action.baseShield + (int)(target.def * action.ratioShield);
+      target.shield += deltaShield;
+      ret += $"make {target.name} gain {deltaShield} shield,";
+    }
+
+    action.invoker.enemyIntention += ret;
+  }
+
+  private void _ForeShowAddBuffAction(ActionDescriptor action) {
+    var buff = new CharObject.Buff {
+      buffId = action.addBuffId,
+      stack = action.buff_stack_0,
+    };
+
+    string ret = "";
+    foreach (var target in FindTarget(action)) {
+
+      switch (buff.buffId) {
+        case BuffId.防守反击:
+          ret += $"{target.name} acquire {buff.stack} fightback,"; 
+          break;
+        case BuffId.攻击力:
+          ret += $"{target.name} acquire {buff.stack} strength,";
+          break;
+      }
+    }
+
+    action.invoker.enemyIntention += ret;
+  }
+
+  #endregion
 
   public static class CommonAction {
     public static ActionDescriptor player_atack(float ratioDmg = 1.0f, int baseDmg = 0) {

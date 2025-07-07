@@ -61,7 +61,10 @@ public class CharObject {
   public class Buff {
     public BuffId buffId;
     public int stack;
-    public int livedTurn;
+    public int life = -1; // Buff的剩余持续回合数,-1表示永久生效
+    public int param0;
+    public int param1;
+    public int param2;
   }
 
   public string name;
@@ -74,12 +77,7 @@ public class CharObject {
   public int speed => finalProp.speed;
   public int maxJourney => finalProp.maxJourney;
   public RogueBattleState.LegacyEnemyAction enemyAction;
-  public List<Buff> buffs = new List<Buff>() {
-    new Buff {
-      buffId = BuffId.攻击力,
-      stack = 6,
-    }
-  };
+  public List<Buff> buffs = new List<Buff>() { };
 
   public CharProp baseProp;
   public List<CharPropSchema.Modifier> modifiers = new();

@@ -10,7 +10,8 @@
 
 0706
 
-- [ ] buff实现：防守反击
-- [ ] action Descriptor实现：添加buff
+- [x] buff实现：防守反击
+- [x] action Descriptor实现：添加buff
+- [ ] 实现怪物：拦路强盗
 - [ ] 根据action Descriptor实现：怪物意图动态显示
 - [ ] 根据action Descriptor实现：卡牌数值动态显示

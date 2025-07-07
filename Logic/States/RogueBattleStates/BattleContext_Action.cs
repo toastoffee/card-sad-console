@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 partial class BattleContext {
   public enum ActionFuncType {
     ATTACK,
+    NON_ATK_DMG,
     GAIN_SHIELD,
     ADD_BUFF,
     SP_SWAP,
@@ -36,21 +37,31 @@ partial class BattleContext {
   #region 执行怪味行为逻辑
 
   public void ExecuteAction(ActionDescriptor action) {
+    var targets = new List<CharObject>();
+    targets.AddRange(FindTarget(action));
     switch (action.funcType) {
       case ActionFuncType.ATTACK:
-        _ExecuteAttackAction(action);
+        _ExecuteAttackAction(action, targets);
+        break;
+      case ActionFuncType.NON_ATK_DMG:
+        _ExecuteAttackAction(action, targets); //暂时使用攻击逻辑处理非攻击伤害，区分是为了避免反击buff的嵌套
         break;
       case ActionFuncType.GAIN_SHIELD:
-        _ExcuteGainShieldAction(action);
+        _ExcuteGainShieldAction(action, targets);
         break;
       case ActionFuncType.ADD_BUFF:
-        _ExecuteAddBuffAction(action);
+        _ExecuteAddBuffAction(action, targets);
         break;
+    }
+    foreach (var target in targets) {
+      foreach (var buff in target.buffs) {
+        BuffTrigger_AfterBeingActionTarget(target, buff, action);
+      }
     }
   }
 
-  private void _ExecuteAttackAction(ActionDescriptor action) {
-    foreach (var target in FindTarget(action)) {
+  private void _ExecuteAttackAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
+    foreach (var target in targets) {
       var attacker = action.invoker;
 
       var dmg = action.baseDmg + (int)(attacker.atk * action.ratioDmg);
@@ -63,20 +74,20 @@ partial class BattleContext {
     }
   }
 
-  private void _ExcuteGainShieldAction(ActionDescriptor action) {
-    foreach (var target in FindTarget(action)) {
+  private void _ExcuteGainShieldAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
+    foreach (var target in targets) {
       var deltaShield = action.baseShield + (int)(target.def * action.ratioShield);
       target.shield += deltaShield;
       Log.Push($"[{target.name}] [+{deltaShield}] shield => [{target.shield}]");
     }
   }
 
-  private void _ExecuteAddBuffAction(ActionDescriptor action) {
+  private void _ExecuteAddBuffAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
     var buff = new CharObject.Buff {
       buffId = action.addBuffId,
       stack = action.buff_stack_0,
     };
-    foreach (var target in FindTarget(action)) {
+    foreach (var target in targets) {
       target.buffs.Add(buff);
     }
   }

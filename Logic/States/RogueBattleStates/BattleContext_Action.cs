@@ -33,6 +33,7 @@ partial class BattleContext {
     public int baseShield;
     public float ratioShield = 1.0f;
     public int buff_stack_0;
+    public int buff_life = -1; // Buff的剩余持续回合数,-1表示永久生效
   }
 
   #region 执行怪味行为逻辑
@@ -45,7 +46,7 @@ partial class BattleContext {
         _ExecuteAttackAction(action, targets);
         break;
       case ActionFuncType.NON_ATK_DMG:
-        _ExecuteCauseDamageAction(action, targets); //暂时使用攻击逻辑处理非攻击伤害，区分是为了避免反击buff的嵌套
+        _ExecuteAttackAction(action, targets); //暂时使用攻击逻辑处理非攻击伤害，区分是为了避免反击buff的嵌套
         break;
       case ActionFuncType.GAIN_SHIELD:
         _ExcuteGainShieldAction(action, targets);
@@ -65,7 +66,6 @@ partial class BattleContext {
     foreach (var target in targets) {
       var attacker = action.invoker;
 
-
       // handle attack action
       var dmg = action.baseDmg + (int)(attacker.atk * action.ratioDmg);
 
@@ -73,44 +73,9 @@ partial class BattleContext {
       target.shield -= shieldDmg;
       target.hp -= dmg - shieldDmg;
 
-
-      // handle been attacked action
-      _HandleBeenAttackedAction(action, target, dmg);
-
       Log.Push($"[{attacker.name}] => [{target.name}]  -[{dmg}]");
     }
   }
-
-  private void _HandleBeenAttackedAction(ActionDescriptor action, CharObject target, int dmgCaused) {
-    var buff = target.buffs.TryGetBuff(BuffId.防守反击);
-    if (buff != null) {
-      // fight back if has shield left, cause damage equals fightback stack
-      if (target.shield > 0) {
-        ExecuteAction(new ActionDescriptor {
-          invoker = action.invoker,
-          funcType = ActionFuncType.NON_ATK_DMG,
-          target = ActionTarget.PLAYER,
-          baseDmg = buff.stack,
-        });
-        Log.Push($"[{action.invoker.name}] fight back (stack = {buff.stack})!");
-      }
-
-    }
-  }
-
-  private void _ExecuteCauseDamageAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
-    foreach (var target in targets) {
-      var attacker = action.invoker;
-      var dmg = action.baseDmg;
-
-      var shieldDmg = (int)MathF.Min(dmg, target.shield);
-      target.shield -= shieldDmg;
-      target.hp -= dmg - shieldDmg;
-
-      Log.Push($"[{attacker.name}] => [{target.name}]  -[{dmg}]");
-    }
-  }
-
 
   private void _ExcuteGainShieldAction(ActionDescriptor action, IEnumerable<CharObject> targets) {
     foreach (var target in targets) {
@@ -124,6 +89,7 @@ partial class BattleContext {
     var buff = new CharObject.Buff {
       buffId = action.addBuffId,
       stack = action.buff_stack_0,
+      life = action.buff_life,
     };
     foreach (var target in targets) {
       AddOrMergeBuff(target.buffs, buff);

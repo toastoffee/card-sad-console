@@ -10,10 +10,12 @@ public partial class BattleContext {
     playerCharObj.modifiers.Clear();
     AddPlayerGearsModifiers(playerCharObj.modifiers);
     CalculateCharBuffsOnProp(playerCharObj);
-    playerCharObj.UpdateProp();
+    playerCharObj.CalculateFinalProp();
 
     foreach (var enemy in enemies) {
-      enemy.UpdateProp();
+      enemy.modifiers.Clear();
+      CalculateCharBuffsOnProp(enemy);
+      enemy.CalculateFinalProp();
     }
   }
 
@@ -25,7 +27,7 @@ public partial class BattleContext {
   }
 
   /// <summary>
-  /// 计算buff对角色属性的影响
+  /// 计算buff对角色属性的影响，以及buff的寿命
   /// </summary>
   /// <param name="charObject"></param>
   public void CalculateCharBuffsOnProp(CharObject charObject) {
@@ -78,6 +80,7 @@ public partial class BattleContext {
           invoker = owner,
           funcType = ActionFuncType.NON_ATK_DMG,
           baseDmg = buff.stack,
+          target = ActionTarget.PLAYER, //todo: 需要一个根据invoker去决定目标的描述，敌人反player，player反敌人
         };
         ExecuteAction(couterAction);
         break;

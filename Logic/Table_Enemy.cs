@@ -49,8 +49,6 @@ public static class EnemyActionDefine {
   //  actions = BanditActions(),
   //  actionSelector = BanditActionSelector,
   //};
-  
-
   public static EnemyActionModel CreateBandit(CharObject self) {
     return new EnemyActionModel {
       modelId = "Bandit",
@@ -98,6 +96,7 @@ public static class EnemyActionDefine {
           addBuffId = BuffId.防守反击,
           target = ActionTarget.SELF,
           buff_stack_0 = 6,
+          buff_life = 2, //持续1回合 时序有点微妙，现在要设为2才行
         });
       }),
     });

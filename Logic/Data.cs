@@ -105,18 +105,8 @@ public class CharObject {
     baseProp = prop;
   }
 
-  public void UpdateProp() {
-    UpdateModifiers();
-
+  public void CalculateFinalProp() {
     finalProp = CharPropSchema.ApplyModifers(baseProp, modifiers);
-  }
-
-  private void UpdateModifiers() {
-    modifiers.Clear();
-    foreach (var buff in buffs) {
-      var modifier = buff.ToModifier();
-      if(modifier != null) modifiers.Add(modifier);
-    }
   }
 }
 

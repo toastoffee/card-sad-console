@@ -7,7 +7,19 @@ public class CardModel {
   public string desc;
   public CardType cardType;
   public List<CardTag> cardTags = new();
-  public Action<BattleContext, Action<ActionDescriptor>> action;
+
+  private Action<BattleContext, Action<ActionDescriptor>> mAction;
+  public Action<BattleContext, Action<ActionDescriptor>> action => mAction;
+
+  public List<ActionDescriptor> cardActions = new();
+
+  public CardModel() {
+    mAction = (ctx, enqueue) => {
+      foreach (var action in cardActions) {
+        enqueue(action);
+      }
+    };
+  }
 }
 
 [AutoModelTable(typeof(CardModel))]
@@ -15,36 +27,35 @@ public static class CardDefine {
   public static CardModel Strike => new CardModel {
     modelId = nameof(Strike),
     cost = 1,
-    desc = "cause 6 damage",
+    desc = $"cause 1x damage()",
     cardType = CardType.WEAPON,
-    action = (ctx, enqueue) => {
-      enqueue(CommonAction.player_atack(1.0f));
-    },
+    cardActions = new List<ActionDescriptor> {
+      CommonAction.player_attack(1.0f)
+    }
   };
   public static CardModel Swap => new CardModel {
     modelId = nameof(Swap),
     cost = 1,
     desc = "discard all weapons/armors, and draw other kind as same counts",
     cardType = CardType.TRINKET,
-    action = null,
   };
   public static CardModel Defend => new CardModel {
     modelId = nameof(Defend),
     cost = 1,
     desc = "gain 5 defend",
     cardType = CardType.ARMOR,
-    action = (ctx, enqueue) => {
-      enqueue(CommonAction.player_gainShield(ratioShield: 1.0f));
-    },
+    cardActions = new List<ActionDescriptor> {
+      CommonAction.player_gainShield(ratioShield: 1.0f)
+    }
   };
   public static CardModel Hit => new CardModel {
     modelId = nameof(Hit),
     cost = 2,
     desc = "cause 15 damage",
     cardType = CardType.WEAPON,
-    action = (ctx, enqueue) => {
-      enqueue(CommonAction.player_atack(2.5f));
-    },
+    cardActions = new List<ActionDescriptor> {
+      CommonAction.player_attack(2.5f)
+    }
   };
   public static CardModel Fire => new CardModel {
     modelId = nameof(Fire),

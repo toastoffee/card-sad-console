@@ -1,4 +1,5 @@
 using CardConsole.Visual;
+using System.Text;
 
 
 public partial class BattleContext {
@@ -289,7 +290,8 @@ public partial class BattleContext {
       var cardModel = new CardViewModel {
         name = card.name,
         cost = card.cost,
-        description = card.cardModel.desc,
+        //description = card.cardModel.desc,
+        description = GetCardDesc(this, card.cardModel),
         descColor = card.cardModel.cardType == CardType.MAGIC ? Col.magicGreen : Col.cardWhite,
         titleColor = Col.cardTypeColors.GetValueOrDefault(card.type, Color.White),
         header = EnumTrans.Get(card.type),
@@ -313,6 +315,30 @@ public partial class BattleContext {
 
     //覆写信息面板，用战斗内的当前属性显示
     _viewModel.playerProp = playerCharObj.playerProp;
+  }
+
+
+  private string GetCardDesc(BattleContext battleCtx, CardModel cardModel) {
+    StringBuilder desc = new();
+
+    for (int i = 0; i < cardModel.cardActions.Count; i++) {
+      desc.Append(GetCardActionDesc(battleCtx, cardModel.cardActions[i]));
+      
+      if(i != cardModel.cardActions.Count - 1) {
+        desc.Append(", ");
+      }
+    }
+    return desc.ToString();
+  }
+
+  private string GetCardActionDesc(BattleContext battleCtx, ActionDescriptor ad) {
+    switch(ad.funcType) {
+      case ActionFuncType.ATTACK:
+        return $"cause {ad.ratioDmg}x({battleCtx.playerCharObj.atk * ad.ratioDmg}) damage";
+      case ActionFuncType.GAIN_SHIELD:
+        return $"gain {ad.ratioShield}x({battleCtx.playerCharObj.def * ad.ratioShield}) defend";
+    }
+    return "undefined";
   }
 
   private string ForeShowEnemyIntention(CharObject enemy) {

@@ -189,7 +189,7 @@ partial class BattleContext {
   #endregion
 
   public static class CommonAction {
-    public static ActionDescriptor player_atack(float ratioDmg = 1.0f, int baseDmg = 0) {
+    public static ActionDescriptor player_attack(float ratioDmg = 1.0f, int baseDmg = 0) {
       return new ActionDescriptor {
         funcType = ActionFuncType.ATTACK,
         target = ActionTarget.ALL_ENEMY,

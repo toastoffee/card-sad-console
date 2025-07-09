@@ -23,6 +23,8 @@ partial class BattleContext {
   public enum BuffId {
     攻击力,
     防守反击,
+    减速,
+    熔炉护盾
   }
 
   public class ActionDescriptor {
@@ -181,6 +183,12 @@ partial class BattleContext {
           break;
         case BuffId.攻击力:
           ret += $"{target.name} acquire {buff.stack} strength,";
+          break;
+        case BuffId.减速:
+          ret += $"{target.name} acquire {buff.stack} slowdown";
+          break;
+        case BuffId.熔炉护盾:
+          ret += $"{target.name} acquire {buff.stack} furnace Shield";
           break;
       }
     }

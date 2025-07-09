@@ -86,7 +86,7 @@ public partial class BattleContext {
 
   private CharObject GetDefaultEnemys() {
     var enemy = new CharObject {
-      name = "Bandit",
+      name = "Furnace Worker",
       hp = 27,
     };
     enemy.LoadFromPlayerProp(27, new CharProp {
@@ -94,7 +94,7 @@ public partial class BattleContext {
     });
     //enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
     
-    enemy.enemyActionModel = EnemyActionDefine.CreateBandit(enemy);
+    enemy.enemyActionModel = EnemyActionDefine.CreateFurnaceWorker(enemy);
     enemy.enemyContext = new EnemyContext(enemy, enemies.Count);
 
     return enemy;

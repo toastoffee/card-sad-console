@@ -106,9 +106,13 @@ public static class EnumTrans {
     Impl<BuffId>.SetFunc((BuffId id) => {
       switch (id) {
         case BuffId.攻击力:
-          return "Attack+";
+          return "Strength";
         case BuffId.防守反击:
-          return "Counter Attack";
+          return "Fightback";
+        case BuffId.减速:
+          return "SlowDown";
+        case BuffId.熔炉护盾:
+          return "FurnaceShield";
         default:
           return id.ToString();
       }

@@ -47,6 +47,12 @@ public partial class BattleContext {
             value = buff.stack,
           });
           break;
+        case BuffId.减速:
+          charObject.modifiers.Add(new(x => x.speed) {
+            type = ModifierType.Add,
+            value = - buff.stack,
+          });
+          break;
       }
     }
   }
@@ -77,6 +83,22 @@ public partial class BattleContext {
         }
         var couterTarget = action.invoker;
         var couterAction = new ActionDescriptor {
+          invoker = owner,
+          funcType = ActionFuncType.NON_ATK_DMG,
+          baseDmg = buff.stack,
+          target = ActionTarget.PLAYER, //todo: 需要一个根据invoker去决定目标的描述，敌人反player，player反敌人
+        };
+        ExecuteAction(couterAction);
+        break;
+      case BuffId.熔炉护盾:
+        if (action.funcType != ActionFuncType.ATTACK) {
+          break;
+        }
+        if (owner.shield > 0) {
+          break;
+        }
+        couterTarget = action.invoker;
+        couterAction = new ActionDescriptor {
           invoker = owner,
           funcType = ActionFuncType.NON_ATK_DMG,
           baseDmg = buff.stack,

@@ -4,7 +4,6 @@ using static BattleContext;
 public class CardModel {
   public string modelId;
   public int cost;
-  public string desc;
   public CardType cardType;
   public List<CardTag> cardTags = new();
 
@@ -27,7 +26,6 @@ public static class CardDefine {
   public static CardModel Strike => new CardModel {
     modelId = nameof(Strike),
     cost = 1,
-    desc = $"cause 1x damage()",
     cardType = CardType.WEAPON,
     cardActions = new List<ActionDescriptor> {
       CommonAction.player_attack(1.0f)
@@ -36,13 +34,11 @@ public static class CardDefine {
   public static CardModel Swap => new CardModel {
     modelId = nameof(Swap),
     cost = 1,
-    desc = "discard all weapons/armors, and draw other kind as same counts",
     cardType = CardType.TRINKET,
   };
   public static CardModel Defend => new CardModel {
     modelId = nameof(Defend),
     cost = 1,
-    desc = "gain 5 defend",
     cardType = CardType.ARMOR,
     cardActions = new List<ActionDescriptor> {
       CommonAction.player_gainShield(ratioShield: 1.0f)
@@ -51,7 +47,6 @@ public static class CardDefine {
   public static CardModel Hit => new CardModel {
     modelId = nameof(Hit),
     cost = 2,
-    desc = "cause 15 damage",
     cardType = CardType.WEAPON,
     cardActions = new List<ActionDescriptor> {
       CommonAction.player_attack(2.5f)
@@ -60,12 +55,32 @@ public static class CardDefine {
   public static CardModel Fire => new CardModel {
     modelId = nameof(Fire),
     cost = 0,
-    desc = "add 1 Fire",
     cardType = CardType.MAGIC,
     cardTags = new List<CardTag> {
       CardTag.STICKY,
       CardTag.CONSIST,
       CardTag.FRAGILE,
+    },
+  };
+
+  public static CardModel CutOff => new CardModel {
+    modelId = nameof(CutOff),
+    cost = 0,
+    cardType = CardType.WEAPON,
+    cardActions = new List<ActionDescriptor> {
+      CommonAction.player_attack(0.8f)
+    }
+  };
+
+  public static CardModel SkilledAttack => new CardModel {
+    modelId = nameof(SkilledAttack),
+    cost = 1,
+    cardType = CardType.WEAPON,
+    cardActions = new List<ActionDescriptor> {
+      CommonAction.player_attack(1.0f)
+    },
+    cardTags = new List<CardTag> {
+      CardTag.RELOAD
     },
   };
 }

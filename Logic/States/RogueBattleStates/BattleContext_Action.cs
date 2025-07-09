@@ -12,6 +12,8 @@ partial class BattleContext {
     GAIN_SHIELD,
     ADD_BUFF,
     SP_SWAP,
+    
+    CONSUME_RANDOM_CARD, // 消耗随机卡牌
   }
   public enum ActionTarget {
     SELF,

@@ -129,6 +129,7 @@ public enum CardTag {
   STICKY,//保留
   CONSIST,//固有
   FRAGILE,//消耗
+  RELOAD, //装填
 }
 
 public class GearObject {

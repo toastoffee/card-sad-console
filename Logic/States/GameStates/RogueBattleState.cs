@@ -44,7 +44,10 @@ public partial class RogueBattleState : GameState {
   public override void OnTick() {
     if (GameInput.Read(GameInput.Type.SKIP_BATTLE)) {
       Log.PushSys("Skip battle.");
-      CardGame.instance.stateEngine.ReplaceTop<RogueInitState>();
+      RoguePlayerData.Instance.SetBattleOut(new RoguePlayerData.BattleOut {
+        remainHp = battleContext.playerCharObj.hp,
+      });
+      CardGame.instance.RouteToProperState();
       return;
     }
 

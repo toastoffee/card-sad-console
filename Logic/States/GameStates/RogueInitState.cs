@@ -20,22 +20,11 @@ public class RogueInitState : RogueRouteState {
       new RouteOption {
         desc = "Start a new game",
         onSelect = () => {
-          stateEngine.ReplaceTop<RogueBattleState>();
+          RoguePlayerData.Instance.FinishInitNode();
+          CardGame.instance.RouteToProperState();
         }
       },
-      new RouteOption {
-        desc = "Start a new game",
-        onSelect = () => {
-          stateEngine.ReplaceTop<RogueBattleState>();
-        }
-      },
-            new RouteOption {
-                desc = "Start a new game",
-                onSelect = () => {
-                    stateEngine.ReplaceTop<RogueBattleState>();
-                }
-            },
-        };
+     };
     return ret;
   }
 }

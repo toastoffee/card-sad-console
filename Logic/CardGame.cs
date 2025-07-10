@@ -84,6 +84,26 @@ class CardGame {
       });
     }
   }
+
+  public void RouteToProperState() {
+    switch (RoguePlayerData.Instance.nodeType) {
+      case RogueNodeType.Init:
+        stateEngine.ReplaceTop<RogueInitState>();
+        break;
+      case RogueNodeType.Enemy:
+        if (!RoguePlayerData.Instance.enemyNodeDescriptor.isKilled) {
+          stateEngine.ReplaceTop<RogueBattleState>();
+        } else {
+          stateEngine.ReplaceTop<RogueBattleFinishState>();
+        }
+        break;
+      case RogueNodeType.Interlude:
+        stateEngine.ReplaceTop<RogueInterludeState>();
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 public struct InputValue {

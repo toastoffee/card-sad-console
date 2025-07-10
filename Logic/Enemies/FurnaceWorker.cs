@@ -2,22 +2,24 @@
 using static BattleContext;
 
 public static partial class EnemyActionDefine {
-
-  public static EnemyActionModel CreateFurnaceWorker(CharObject self) {
-    return new EnemyActionModel {
-      modelId = "FurnaceWorker",
-      actions = FurnaceWorkerActions(self),
-      actionSelector = FurnaceWorkerActionSelector,
-    };
+  public static EnemyActionModel FurnanceWorker {
+    get {
+      return new EnemyActionModel {
+        modelId = nameof(FurnanceWorker),
+        actions = FurnaceWorkerActions(),
+        actionSelector = FurnaceWorkerActionSelector,
+      };
+    }
   }
 
-  public static List<EnemyAction> FurnaceWorkerActions(CharObject self) {
+
+  public static List<EnemyAction> FurnaceWorkerActions() {
     var ret = new List<EnemyAction>();
     ret.Add(new EnemyAction {
       tag = EnemyActionTag.攻击_1,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ATTACK,
           target = ActionTarget.PLAYER,
           baseDmg = 7,
@@ -29,12 +31,12 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.防御,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.GAIN_SHIELD,
           baseShield = 6,
         });
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.熔炉护盾,
           target = ActionTarget.SELF,
@@ -47,7 +49,7 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.蓄力,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.攻击力,
           target = ActionTarget.SELF,

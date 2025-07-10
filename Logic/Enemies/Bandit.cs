@@ -2,22 +2,23 @@
 using static BattleContext;
 
 public static partial class EnemyActionDefine {
-
-  public static EnemyActionModel CreateBandit(CharObject self) {
-    return new EnemyActionModel {
-      modelId = "Bandit",
-      actions = BanditActions(self),
-      actionSelector = BanditActionSelector,
-    };
+  public static EnemyActionModel Bandit {
+    get {
+      return new EnemyActionModel {
+        modelId = nameof(Bandit),
+        actions = BanditActions(),
+        actionSelector = BanditActionSelector,
+      };
+    }
   }
 
-  public static List<EnemyAction> BanditActions(CharObject self) {
+  public static List<EnemyAction> BanditActions() {
     var ret = new List<EnemyAction>();
     ret.Add(new EnemyAction {
       tag = EnemyActionTag.攻击_1,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ATTACK,
           target = ActionTarget.PLAYER,
           baseDmg = 8,
@@ -29,7 +30,7 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.攻击_2,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ATTACK,
           target = ActionTarget.PLAYER,
           baseDmg = 8,
@@ -40,12 +41,12 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.招架,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.GAIN_SHIELD,
           baseShield = 8,
         });
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.防守反击,
           target = ActionTarget.SELF,
@@ -58,7 +59,7 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.蓄力,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.攻击力,
           target = ActionTarget.SELF,

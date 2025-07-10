@@ -2,22 +2,23 @@
 using static BattleContext;
 
 public static partial class EnemyActionDefine {
-
-  public static EnemyActionModel CreateLongLeggy(CharObject self) {
-    return new EnemyActionModel {
-      modelId = "LongLeggy",
-      actions = LongLeggyActions(self),
-      actionSelector = LongLeggyActionSelector,
-    };
+  public static EnemyActionModel LongLeggy {
+    get {
+      return new EnemyActionModel {
+        modelId = nameof(LongLeggy),
+        actions = LongLeggyActions(),
+        actionSelector = LongLeggyActionSelector,
+      };
+    }
   }
 
-  public static List<EnemyAction> LongLeggyActions(CharObject self) {
+  public static List<EnemyAction> LongLeggyActions() {
     var ret = new List<EnemyAction>();
     ret.Add(new EnemyAction {
       tag = EnemyActionTag.攻击_1,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ATTACK,
           target = ActionTarget.PLAYER,
           baseDmg = 7,
@@ -29,7 +30,7 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.防御,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.GAIN_SHIELD,
           baseShield = 8,
         });
@@ -39,13 +40,13 @@ public static partial class EnemyActionDefine {
       tag = EnemyActionTag.绊脚,
       actionHandler = new EnemyActionHandler((ctx, enqueue) => {
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ATTACK,
           target = ActionTarget.PLAYER,
           baseDmg = 4,
         });
         enqueue(new ActionDescriptor {
-          invoker = self,
+          invoker = ctx.cha,
           funcType = ActionFuncType.ADD_BUFF,
           addBuffId = BuffId.减速,
           target = ActionTarget.PLAYER,
@@ -69,7 +70,7 @@ public static partial class EnemyActionDefine {
       case 3:
         return EnemyActionTag.绊脚;
     }
-    
+
 
     return EnemyActionTag.攻击_1;
   }

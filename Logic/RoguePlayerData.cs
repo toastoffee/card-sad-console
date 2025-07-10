@@ -10,6 +10,7 @@ public class RogueInitNodeDescriptor {
 
 public class RogueEnemyNodeDescriptor {
   public bool isKilled = false;
+  public List<EnemyActionModel> enemyActionModels = new List<EnemyActionModel>();
 }
 
 public class RogueInterludeNodeDescriptor {

@@ -35,13 +35,11 @@ public partial class BattleContext {
     public CardType type;
   }
 
-  public BattleContext(CharObject enemy = null) {
+  public BattleContext() {
     _viewModel = CardGame.instance.viewModel;
 
     Setup();
-
-    enemy = enemy ?? GetDefaultEnemys();
-    enemies.Add(enemy);
+    GenEnemysFromPlayerData();
 
     RefreshProps();
     StartBattle();
@@ -84,20 +82,21 @@ public partial class BattleContext {
     return ret;
   }
 
-  private CharObject GetDefaultEnemys() {
-    var enemy = new CharObject {
-      name = "Furnace Worker",
-      hp = 27,
-    };
-    enemy.LoadFromPlayerProp(27, new CharProp {
-      maxHp = 27,
-    });
-    //enemy.enemyAction = new RogueBattleState.TreemanAction(enemy);
-    
-    enemy.enemyActionModel = EnemyActionDefine.CreateFurnaceWorker(enemy);
-    enemy.enemyContext = new EnemyContext(enemy, enemies.Count);
+  private void GenEnemysFromPlayerData() {
+    foreach (var actionModel in RoguePlayerData.Instance.enemyNodeDescriptor.enemyActionModels) {
+      var enemy = new CharObject {
+        name = actionModel.modelId,
+        hp = 27,
+      };
+      enemy.LoadFromPlayerProp(27, new CharProp {
+        maxHp = 27,
+      });
 
-    return enemy;
+      enemy.enemyActionModel = actionModel;
+      enemy.enemyContext = new EnemyContext(enemy, enemies.Count);
+
+      enemies.Add(enemy);
+    }
   }
 
   private void InitializeDeckFromEquipment() {
@@ -323,8 +322,8 @@ public partial class BattleContext {
 
     for (int i = 0; i < cardModel.cardActions.Count; i++) {
       desc.Append(GetCardActionDesc(battleCtx, cardModel.cardActions[i]));
-      
-      if(i != cardModel.cardActions.Count - 1) {
+
+      if (i != cardModel.cardActions.Count - 1) {
         desc.Append(", ");
       }
     }
@@ -332,7 +331,7 @@ public partial class BattleContext {
   }
 
   private string GetCardActionDesc(BattleContext battleCtx, ActionDescriptor ad) {
-    switch(ad.funcType) {
+    switch (ad.funcType) {
       case ActionFuncType.ATTACK:
         return $"cause {ad.ratioDmg}x({battleCtx.playerCharObj.atk * ad.ratioDmg}) damage";
       case ActionFuncType.GAIN_SHIELD:
